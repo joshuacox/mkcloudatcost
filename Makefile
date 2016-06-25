@@ -30,7 +30,7 @@ listservers:
 	cat listservers|jq .
 
 hostnames:
-	jq -r '.data[] | " \(.sid) \(.hostname) \(.label) \(.ip) \(.rootpass)" ' listservers >> hostnames
+	jq -r '.data[] | " \(.sid) \(.hostname) \(.label) \(.ip) \(.rootpass) \(.id)  " ' listservers >> hostnames
 
 hostnamer:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -38,11 +38,11 @@ hostnamer:
 	$(eval API_USERNAME := $(shell cat API_USERNAME))
 	$(eval URL :=https://panel.cloudatcost.com/api/v1/rdns.php)
 	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD; \
-do \
-echo "curl -k -v --data '$(DATA)&sid=$$SID&hostname=$$HOSTNAME' '$(URL)'" ; \
-echo "curl -k -v --data '$(DATA)&sid=$$SID&name=$$NAME' '$(URL)'" ; \
-done < hostnames > hostnamer
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	do \
+	echo "curl -k -v --data '$(DATA)&sid=$$SID&hostname=$$HOSTNAME' '$(URL)'" ; \
+	echo "curl -k -v --data '$(DATA)&sid=$$SID&name=$$NAME' '$(URL)'" ; \
+	done < hostnames > hostnamer
 	rm -Rf $(TMP)
 
 namer:
@@ -52,26 +52,36 @@ namer:
 	$(eval URL :=https://panel.cloudatcost.com/api/v1/renameserver.php)
 	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME))
 	while read SID HOSTNAME NAME; \
-do \
-echo "curl -k -v --data '$(DATA)&sid=$$SID&name=$$NAME' '$(URL)'" ; \
-done < hostnames > namer
+		do \
+		echo "curl -k -v --data '$(DATA)&sid=$$SID&name=$$NAME' '$(URL)'" ; \
+		done < hostnames > namer
 	rm -Rf $(TMP)
 
 keyer:
-	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP SSHPASS; \
-do \
-echo "sshpass -p$$SSHPASS ssh-copy-id  -oStrictHostKeyChecking=no roo@$$IP" ; \
-done < hostnames > keyer
-	rm -Rf $(TMP)
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "./keymaster root $$ROOTPASSWORD $$IP"; \
+		done < hostnames > keyer
 
-fuck:
-	/bin/bash thehostnamescript
-	rm thehostnamescript
+tester:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p16222 root@$$IP 'uname -a '"; \
+		done < hostnames > $(TMP)/tester 
+	-/usr/bin/time -v parallel  --jobs 5 -- < $(TMP)/tester
+	-@rm -Rf $(TMP)
 
 clean:
+	-@rm -f keyer
 	-@rm -f namer
 	-@rm -f hostnamer
 	-@rm -f hostnames
 	-@rm -f listservers
 	-@rm -f listtemplates 
+
+movein:
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/trusty-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
+		done < hostnames > movein 

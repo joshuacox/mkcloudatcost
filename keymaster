@@ -1,0 +1,16 @@
+#!/usr/bin/expect -f
+set username [lindex $argv 0];
+set password [lindex $argv 1];
+set ip [lindex $argv 2];
+
+spawn ssh $username@$ip
+expect "assword:"
+send "$password\r"
+expect "#"
+send "mkdir -p ~/.ssh \r"
+expect "#"
+send "chmod 600 ~/.ssh \r"
+expect "#"
+send "curl https://raw.githubusercontent.com/Thalhalla/keys/master/addus.sh | bash \r"
+expect "#"
+send "exit \r"
