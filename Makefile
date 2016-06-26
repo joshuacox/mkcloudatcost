@@ -13,12 +13,24 @@ listtasks:
 	$(eval URL :=https://panel.cloudatcost.com/api/v1/listtasks.php?key=$(API_KEY)&login=$(API_USERNAME))
 	echo "curl -k -o listtasks '$(URL)' "|bash
 
+jessie: mkjessieclusty
+
 trusty: mktrustyclusty
 
 glusty: mkglustyclusty
 
 lstrusties:
 	cat trusties|jq .
+
+mkjessieclusty:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval API_KEY := $(shell cat API_KEY))
+	$(eval API_USERNAME := $(shell cat API_USERNAME))
+	$(eval URL :=https://panel.cloudatcost.com/api/v1/cloudpro/build.php)
+	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME)&cpu=4&ram=2048&storage=40&os=3)
+	echo "curl -k -v -o $(TMP)/mkjessieclusty --data '$(DATA)' '$(URL)'"|bash
+	cat $(TMP)/mkjessieclusty>>jessies
+	rm -Rf $(TMP)
 
 mktrustyclusty:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
