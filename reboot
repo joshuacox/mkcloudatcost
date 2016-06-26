@@ -1,0 +1,9 @@
+#!/bin/bash
+API_KEY=`cat API_KEY`
+API_USERNAME=`cat API_USERNAME`
+SID=$1
+echo $API_KEY
+echo $API_USERNAME
+DATA="key=$API_KEY&login=$API_USERNAME&sid=$SID&action=reset" 
+URL=https://panel.cloudatcost.com/api/v1/powerop.php
+curl -k --data $DATA $URL

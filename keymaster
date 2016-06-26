@@ -2,8 +2,9 @@
 set username [lindex $argv 0];
 set password [lindex $argv 1];
 set ip [lindex $argv 2];
+set port [lindex $argv 3];
 
-spawn ssh $username@$ip
+spawn ssh -p $port $username@$ip
 expect "assword:"
 send "$password\r"
 expect "#"
