@@ -1,4 +1,4 @@
-auto: workingList hostnamer normalizer
+auto: workingList hostnamer normalizer keyscan installCurl keyer movein
 
 listtemplates:
 	$(eval API_KEY := $(shell cat API_KEY))
@@ -17,10 +17,12 @@ jessie: mkjessieclusty
 
 trusty: mktrustyclusty
 
+centos: mkcentosclusty
+
 glusty: mkglustyclusty
 
-lstrusties:
-	cat trusties|jq .
+lsjessies:
+	jq . jessies
 
 mkjessieclusty:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -32,6 +34,9 @@ mkjessieclusty:
 	cat $(TMP)/mkjessieclusty>>jessies
 	rm -Rf $(TMP)
 
+lstrusties:
+	cat trusties|jq .
+
 mktrustyclusty:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval API_KEY := $(shell cat API_KEY))
@@ -40,6 +45,19 @@ mktrustyclusty:
 	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME)&cpu=4&ram=2048&storage=40&os=27)
 	echo "curl -k -v -o $(TMP)/mktrustyclusty --data '$(DATA)' '$(URL)'"|bash
 	cat $(TMP)/mktrustyclusty>>trusties
+	rm -Rf $(TMP)
+
+lscentoss:
+	jq . centoss
+
+mkcentosclusty:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval API_KEY := $(shell cat API_KEY))
+	$(eval API_USERNAME := $(shell cat API_USERNAME))
+	$(eval URL :=https://panel.cloudatcost.com/api/v1/cloudpro/build.php)
+	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME)&cpu=4&ram=2048&storage=40&os=26)
+	echo "curl -k -v -o $(TMP)/mkcentosclusty --data '$(DATA)' '$(URL)'"|bash
+	cat $(TMP)/mkcentosclusty>>centoss
 	rm -Rf $(TMP)
 
 lsglusties:
@@ -106,23 +124,47 @@ kargo:
 	@bash $(TMP)/mkargo.sh
 	@rm -Rf $(TMP)
 
+installCurl:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "./curler root $$ROOTPASSWORD $$IP" 22; \
+		done < workingList > $(TMP)/working.sh
+	@bash $(TMP)/working.sh
+	@rm -Rf $(TMP)
+
 keyer:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "./keymaster root $$ROOTPASSWORD $$IP" 22; \
-		done < workingList > keyer
+		done < workingList > $(TMP)/working.sh
+	@bash $(TMP)/working.sh
+	@rm -Rf $(TMP)
 
 keyer16222:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "./keymaster root $$ROOTPASSWORD $$IP" 16222; \
-		done < workingList > keyer
+		done < workingList > $(TMP)/working.sh
+	@bash $(TMP)/working.sh
+	@rm -Rf $(TMP)
 
 tester: listservers workingList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p16222 root@$$IP 'uname -a '"; \
+		done < workingList > $(TMP)/tester 
+	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/tester
+	-@rm -Rf $(TMP)
+
+tester22: listservers workingList
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p22 root@$$IP 'uname -a '"; \
 		done < workingList > $(TMP)/tester 
 	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/tester
 	-@rm -Rf $(TMP)
@@ -136,14 +178,32 @@ sshrebooter: listservers workingList
 	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/rebooter
 	-@rm -Rf $(TMP)
 
+sshrebooter22: listservers workingList
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p22 root@$$IP 'shutdown -r +1 &'"; \
+		done < workingList > $(TMP)/rebooter 
+	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/rebooter
+	-@rm -Rf $(TMP)
+
 keyscan: listservers workingList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
-		echo "ssh-keyscan -p22 $$IP "; \
-		echo "ssh-keyscan -p16222 $$IP "; \
+		echo "ssh-keyscan -p22 $$IP >>~/.ssh/known_hosts"; \
 		done < workingList > $(TMP)/keyscan
-	-/usr/bin/time -v parallel  --jobs 5 -- < $(TMP)/keyscan
+	-bash $(TMP)/keyscan
+	-@rm -Rf $(TMP)
+
+keyscan16222: listservers workingList
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh-keyscan -p16222 $$IP >>~/.ssh/known_hosts"; \
+		done < workingList > $(TMP)/keyscan
+	-bash $(TMP)/keyscan
+	-@rm -Rf $(TMP)
 
 clean:
 	-@rm -f keyer
@@ -158,16 +218,22 @@ clean:
 movein: jessiemovein
 
 jessiemovein:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/jessie-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
-		done < workingList > movein
+		done < workingList > $(TMP)/working.sh
+	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
+	@rm -Rf $(TMP)
 
 trustymovein:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/trusty-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
-		done < workingList > movein 
+		done < workingList > $(TMP)/working.sh
+	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
+	@rm -Rf $(TMP)
 
 workingList: fullList
 	-@ echo "now you should copy fullList to workinglist and edit it to only the server you wish to work on the next line errors on purpose"
