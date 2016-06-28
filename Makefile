@@ -78,7 +78,6 @@ listservers:
 	$(eval API_USERNAME := $(shell cat API_USERNAME))
 	$(eval URL :=https://panel.cloudatcost.com/api/v1/listservers.php?key=$(API_KEY)&login=$(API_USERNAME))
 	echo "curl -k -o listservers '$(URL)' "|bash
-	cat listservers|jq .
 
 fullList: listservers
 	jq -r '.data[] | " \(.sid) \(.hostname) \(.label) \(.ip) \(.rootpass) \(.id)  " ' listservers >> fullList
