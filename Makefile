@@ -110,6 +110,19 @@ normalizer:
 	-/usr/bin/time parallel  --jobs 2 -- < $(TMP)/normalizer
 	rm -Rf $(TMP)
 
+rebooter:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval API_KEY := $(shell cat API_KEY))
+	$(eval API_USERNAME := $(shell cat API_USERNAME))
+	$(eval URL :=https://panel.cloudatcost.com/api/v1/powerop.php)
+	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME)&action=reset)
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "curl -k -v --data '$(DATA)&sid=$$SID&mode=normal' '$(URL)'" ; \
+		done < workingList > $(TMP)/rebooter 
+	-/usr/bin/time parallel  --jobs 2 -- < $(TMP)/rebooter
+	@rm -Rf $(TMP)
+
 kargo:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	echo  '#!/bin/bash' > $(TMP)/mkargo.sh
