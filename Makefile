@@ -32,7 +32,7 @@ mkjessieclusty:
 	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME)&cpu=4&ram=2048&storage=40&os=3)
 	echo "curl -k -v -o $(TMP)/mkjessieclusty --data '$(DATA)' '$(URL)'"|bash
 	cat $(TMP)/mkjessieclusty>>jessies
-	rm -Rf $(TMP)
+	-@rm -Rf $(TMP)
 
 lstrusties:
 	cat trusties|jq .
@@ -45,7 +45,7 @@ mktrustyclusty:
 	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME)&cpu=4&ram=2048&storage=40&os=27)
 	echo "curl -k -v -o $(TMP)/mktrustyclusty --data '$(DATA)' '$(URL)'"|bash
 	cat $(TMP)/mktrustyclusty>>trusties
-	rm -Rf $(TMP)
+	-@rm -Rf $(TMP)
 
 lscentoss:
 	jq . centoss
@@ -58,7 +58,7 @@ mkcentosclusty:
 	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME)&cpu=4&ram=2048&storage=40&os=26)
 	echo "curl -k -v -o $(TMP)/mkcentosclusty --data '$(DATA)' '$(URL)'"|bash
 	cat $(TMP)/mkcentosclusty>>centoss
-	rm -Rf $(TMP)
+	-@rm -Rf $(TMP)
 
 lsglusties:
 	cat glusties|jq .
@@ -71,7 +71,7 @@ mkglustyclusty:
 	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME)&cpu=8&ram=4096&storage=120&os=27)
 	echo "curl -k -v -o $(TMP)/mkglustyclusty --data '$(DATA)' '$(URL)'"|bash
 	cat $(TMP)/mkglustyclusty>>glusties
-	rm -Rf $(TMP)
+	-@rm -Rf $(TMP)
 
 listservers:
 	$(eval API_KEY := $(shell cat API_KEY))
@@ -95,7 +95,7 @@ hostnamer:
 	echo "curl -k -v --data '$(DATA)&sid=$$SID&name=$$NAME' '$(URL2)'" ; \
 	done < workingList > $(TMP)/hostnamer
 	-/usr/bin/time parallel  --jobs 2 -- < $(TMP)/hostnamer
-	rm -Rf $(TMP)
+	-@rm -Rf $(TMP)
 
 normalizer:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -108,7 +108,7 @@ normalizer:
 		echo "curl -k -v --data '$(DATA)&sid=$$SID&mode=normal' '$(URL)'" ; \
 		done < workingList > $(TMP)/normalizer 
 	-/usr/bin/time parallel  --jobs 2 -- < $(TMP)/normalizer
-	rm -Rf $(TMP)
+	-@rm -Rf $(TMP)
 
 rebooter:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
