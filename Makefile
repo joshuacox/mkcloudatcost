@@ -234,6 +234,21 @@ trustymovein:
 	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
+centosmovein:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh root@$$IP 'echo "nameserver 8.8.8.8" >>/etc/resolv.conf echo "nameserver 8.8.4.4" >>/etc/resolv.conf; echo "DNS1=8.8.8.8" >>/etc/sysconfig/network-scripts/ifcfg-eth0; echo "DNS2=8.8.4.4" >>/etc/sysconfig/network-scripts/ifcfg-eth0'"; \
+		done < workingList > $(TMP)/working.sh
+	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
+	- rm  $(TMP)/working.sh
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/centos-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
+		done < workingList > $(TMP)/working.sh
+	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
+	@rm -Rf $(TMP)
+
 workingList: fullList
 	-@ echo "now you should copy fullList to workinglist and edit it to only the server you wish to work on the next line errors on purpose"
 	-@ echo -n "WARNING!!! the next line errors on purpose to break"
