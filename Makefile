@@ -1,4 +1,7 @@
-auto: workingList hostnamer normalizer keyscan installCurl keyer movein
+all: workingList hostnamer normalizer next
+
+next: workingList keyscan keyer tester22
+	-@echo "next try trustymovein for a trustyhost"
 
 listtemplates:
 	$(eval API_KEY := $(shell cat API_KEY))
@@ -167,7 +170,7 @@ tester: listservers workingList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
-		echo "ssh -p16222 root@$$IP 'uname -a '"; \
+		echo "ssh -p16222 root@$$IP 'uname -a ;docker ps'"; \
 		done < workingList > $(TMP)/tester 
 	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/tester
 	-@rm -Rf $(TMP)
@@ -176,7 +179,7 @@ tester22: listservers workingList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
-		echo "ssh -p22 root@$$IP 'uname -a '"; \
+		echo "ssh -p22 root@$$IP 'which curl;uname -a '"; \
 		done < workingList > $(TMP)/tester 
 	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/tester
 	-@rm -Rf $(TMP)
@@ -247,6 +250,15 @@ trustymovein:
 	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
+trustymovein16222:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p16222 root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/trusty-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
+		done < workingList > $(TMP)/working.sh
+	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
+	@rm -Rf $(TMP)
+
 centosmovein:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
@@ -277,3 +289,21 @@ workingList: fullList
 	-@ echo -n "!"
 	-@sleep 1
 	cat workingList
+
+enter:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p16222 root@$$IP"; \
+		done < workingList > $(TMP)/working.sh
+	-bash $(TMP)/working.sh
+	@rm -Rf $(TMP)
+
+enter22:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p22 root@$$IP"; \
+		done < workingList > $(TMP)/working.sh
+	-bash $(TMP)/working.sh
+	@rm -Rf $(TMP)
