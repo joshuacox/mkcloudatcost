@@ -326,9 +326,9 @@ generals:	workingList
 		((COUNTZERO++)) ; \
 		echo "sed -i '$$COUNTZERO s/Not\ Assigned\ null/$$NAME.$$DOMAIN $$NAME/' $(CWD)/workingList"; \
 		done < generals.txt > $(TMP)/working.sh
-	-cat $(TMP)/working.sh
 	-bash $(TMP)/working.sh
 	@rm -Rf $(TMP)
+	-@cat workingList
 
 full: fullList
 
