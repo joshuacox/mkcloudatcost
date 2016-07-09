@@ -2,11 +2,11 @@ all: help
 
 help:
 	-@echo "make fullList -- will initialize the fullList, which is a list of servers @ cloudatcost"
-	-@echo "make generals -- will replace the 'Not Assigned null' in the workingLIst with generals"
+	-@echo "make generals -- will replace the 'Not Assigned null' in the workingList with generals"
 	-@echo "make auto -- will initialize some servers from a workingList"
 	-@echo "read the README.md for more"
 
-auto: API_USERNAME API_KEY workingList hostnamer normalizer next movein tester22 sshrebooter22
+auto: API_USERNAME API_KEY workingList newnamer hostnamer normalizer next movein tester22 sshrebooter22
 
 next: API_USERNAME API_KEY workingList keyscan keyer
 	-@echo "next try trustymovein for a trustyhost"
@@ -237,6 +237,7 @@ clean:
 	-@rm -f listservers
 	-@rm -f listtemplates
 	-@rm -f listtasks
+	-@rm -f names.list
 
 movein: trustymovein
 
@@ -282,7 +283,7 @@ centosmovein:
 	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
-workingList: fullList
+oldworkingList: fullList
 	-@ echo "now you should copy fullList to workinglist and edit it to only the server you wish to work on the next line errors on purpose"
 	-@ echo -n "WARNING!!! the next line errors on purpose to break"
 	-@sleep 1
@@ -297,6 +298,9 @@ workingList: fullList
 	-@ echo -n "!"
 	-@sleep 1
 	cat workingList
+
+workingList: fullList
+	cat fullList|grep 'Not Assigned null'>workingList
 
 enter:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -343,3 +347,32 @@ API_USERNAME:
 	@while [ -z "$$API_USERNAME" ]; do \
 		read -r -p "Enter the API USERNAME you wish to associate with this container [API_USERNAME]: " API_USERNAME; echo "$$API_USERNAME">>API_USERNAME; cat API_USERNAME; \
 	done ;
+
+names.list: fullList
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	cat *.names > $(TMP)/names.list
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+	    cat $(TMP)/names.list|grep -v $$NAME > $(TMP)/names.list.tmp ; \
+	    mv $(TMP)/names.list.tmp $(TMP)/names.list ; \
+	    cat $(TMP)/names.list|grep -v $$HOSTNAME > $(TMP)/names.list.tmp ; \
+	    mv $(TMP)/names.list.tmp $(TMP)/names.list ; \
+		done < fullList
+	cat $(TMP)/names.list| sort -R --random-source=/dev/urandom > $(TMP)/names.list.tmp
+	mv $(TMP)/names.list.tmp $(TMP)/names.list
+	cat $(TMP)/names.list > names.list
+
+newnamer: SHELL:=/bin/bash
+newnamer: fullList names.list workingList
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval CWD := $(shell pwd))
+	COUNTZERO=0
+	while read NAME DOMAIN; \
+		do \
+		((COUNTZERO++)) ; \
+		echo "sed -i '$$COUNTZERO s/Not\ Assigned\ null/$$NAME.$$DOMAIN $$NAME/' $(CWD)/workingList"; \
+		done < names.list > $(TMP)/working.sh
+	-bash $(TMP)/working.sh
+	@rm -Rf $(TMP)
+	-@cat workingList
+
