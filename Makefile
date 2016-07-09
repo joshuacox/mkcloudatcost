@@ -1,4 +1,12 @@
-all: workingList hostnamer normalizer next
+all: help
+
+help:
+	-@echo "make fullList -- will initialize the fullList, which is a list of servers @ cloudatcost"
+	-@echo "make generals -- will replace the 'Not Assigned null' in the workingLIst with generals"
+	-@echo "make auto -- will initialize some servers from a workingList"
+	-@echo "read the README.md for more"
+
+auto: workingList hostnamer normalizer next
 
 next: workingList keyscan keyer tester22
 	-@echo "next try trustymovein for a trustyhost"
@@ -230,7 +238,7 @@ clean:
 	-@rm -f listtemplates
 	-@rm -f listtasks
 
-movein: jessiemovein
+movein: trustymovein
 
 jessiemovein:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -307,3 +315,21 @@ enter22:
 		done < workingList > $(TMP)/working.sh
 	-bash $(TMP)/working.sh
 	@rm -Rf $(TMP)
+
+generals: SHELL:=/bin/bash
+generals:	workingList
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval CWD := $(shell pwd))
+	COUNTZERO=0
+	while read NAME DOMAIN; \
+		do \
+		((COUNTZERO++)) ; \
+		echo "sed -i '$$COUNTZERO s/Not\ Assigned\ null/$$NAME.$$DOMAIN $$NAME/' $(CWD)/workingList"; \
+		done < generals.txt > $(TMP)/working.sh
+	-cat $(TMP)/working.sh
+	-bash $(TMP)/working.sh
+	@rm -Rf $(TMP)
+
+full: fullLIst
+
+f: full
