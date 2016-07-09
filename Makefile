@@ -330,7 +330,7 @@ generals:	workingList
 	-bash $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
-full: fullLIst
+full: fullList
 
 f: full
 
