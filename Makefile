@@ -6,9 +6,9 @@ help:
 	-@echo "make auto -- will initialize some servers from a workingList"
 	-@echo "read the README.md for more"
 
-auto: workingList hostnamer normalizer next
+auto: API_USERNAME API_KEY workingList hostnamer normalizer next
 
-next: workingList keyscan keyer tester22
+next: API_USERNAME API_KEY workingList keyscan keyer tester22
 	-@echo "next try trustymovein for a trustyhost"
 
 listtemplates:
@@ -35,7 +35,7 @@ glusty: mkglustyclusty
 lsjessies:
 	jq . jessies
 
-mkjessieclusty:
+mkjessieclusty: API_USERNAME API_KEY 
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval API_KEY := $(shell cat API_KEY))
 	$(eval API_USERNAME := $(shell cat API_USERNAME))
@@ -48,7 +48,7 @@ mkjessieclusty:
 lstrusties:
 	cat trusties|jq .
 
-mktrustyclusty:
+mktrustyclusty: API_USERNAME API_KEY 
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval API_KEY := $(shell cat API_KEY))
 	$(eval API_USERNAME := $(shell cat API_USERNAME))
@@ -61,7 +61,7 @@ mktrustyclusty:
 lscentoss:
 	jq . centoss
 
-mkcentosclusty:
+mkcentosclusty: API_USERNAME API_KEY 
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval API_KEY := $(shell cat API_KEY))
 	$(eval API_USERNAME := $(shell cat API_USERNAME))
@@ -74,7 +74,7 @@ mkcentosclusty:
 lsglusties:
 	cat glusties|jq .
 
-mkglustyclusty:
+mkglustyclusty: API_USERNAME API_KEY 
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval API_KEY := $(shell cat API_KEY))
 	$(eval API_USERNAME := $(shell cat API_USERNAME))
@@ -90,10 +90,10 @@ listservers:
 	$(eval URL :=https://panel.cloudatcost.com/api/v1/listservers.php?key=$(API_KEY)&login=$(API_USERNAME))
 	echo "curl -k -o listservers '$(URL)' "|bash
 
-fullList: listservers
+fullList: API_USERNAME API_KEY  listservers
 	jq -r '.data[] | " \(.sid) \(.hostname) \(.label) \(.ip) \(.rootpass) \(.id)  " ' listservers >> fullList
 
-hostnamer:
+hostnamer: API_USERNAME API_KEY 
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval API_KEY := $(shell cat API_KEY))
 	$(eval API_USERNAME := $(shell cat API_USERNAME))
@@ -108,7 +108,7 @@ hostnamer:
 	-/usr/bin/time parallel  --jobs 2 -- < $(TMP)/hostnamer
 	-@rm -Rf $(TMP)
 
-normalizer:
+normalizer: API_USERNAME API_KEY 
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval API_KEY := $(shell cat API_KEY))
 	$(eval API_USERNAME := $(shell cat API_USERNAME))
@@ -333,3 +333,13 @@ generals:	workingList
 full: fullLIst
 
 f: full
+
+API_KEY:
+	@while [ -z "$$API_KEY" ]; do \
+		read -r -p "Enter the MySQL password you wish to associate with this container [API_KEY]: " API_KEY; echo "$$API_KEY">>API_KEY; cat API_KEY; \
+	done ;
+
+API_USERNAME:
+	@while [ -z "$$API_USERNAME" ]; do \
+		read -r -p "Enter the MySQL password you wish to associate with this container [API_USERNAME]: " API_USERNAME; echo "$$API_USERNAME">>API_USERNAME; cat API_USERNAME; \
+	done ;
