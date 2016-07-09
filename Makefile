@@ -374,5 +374,5 @@ newnamer: fullList names.list newList
 		done < names.list > $(TMP)/working.sh
 	-bash $(TMP)/working.sh
 	@rm -Rf $(TMP)
-	-@p newList workingList
+	-@mv -i newList workingList
 
