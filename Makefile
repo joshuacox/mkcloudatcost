@@ -336,10 +336,10 @@ f: full
 
 API_KEY:
 	@while [ -z "$$API_KEY" ]; do \
-		read -r -p "Enter the MySQL password you wish to associate with this container [API_KEY]: " API_KEY; echo "$$API_KEY">>API_KEY; cat API_KEY; \
+		read -r -p "Enter the API KEY you wish to associate with this container [API_KEY]: " API_KEY; echo "$$API_KEY">>API_KEY; cat API_KEY; \
 	done ;
 
 API_USERNAME:
 	@while [ -z "$$API_USERNAME" ]; do \
-		read -r -p "Enter the MySQL password you wish to associate with this container [API_USERNAME]: " API_USERNAME; echo "$$API_USERNAME">>API_USERNAME; cat API_USERNAME; \
+		read -r -p "Enter the API USERNAME you wish to associate with this container [API_USERNAME]: " API_USERNAME; echo "$$API_USERNAME">>API_USERNAME; cat API_USERNAME; \
 	done ;
