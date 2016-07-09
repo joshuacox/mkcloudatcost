@@ -6,7 +6,7 @@ help:
 	-@echo "make auto -- will initialize some servers from a workingList"
 	-@echo "read the README.md for more"
 
-auto: API_USERNAME API_KEY workingList newnamer hostnamer normalizer next movein tester22 sshrebooter22
+auto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next movein tester22 sshrebooter22
 
 next: API_USERNAME API_KEY workingList keyscan keyer
 	-@echo "next try trustymovein for a trustyhost"
@@ -283,7 +283,7 @@ centosmovein:
 	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
-oldworkingList: fullList
+workingList: fullList
 	-@ echo "now you should copy fullList to workinglist and edit it to only the server you wish to work on the next line errors on purpose"
 	-@ echo -n "WARNING!!! the next line errors on purpose to break"
 	-@sleep 1
@@ -299,8 +299,8 @@ oldworkingList: fullList
 	-@sleep 1
 	cat workingList
 
-workingList: fullList
-	cat fullList|grep 'Not Assigned null'>workingList
+newList: fullList
+	cat fullList|grep 'Not Assigned null'>newList
 
 enter:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -363,16 +363,16 @@ names.list: fullList
 	cat $(TMP)/names.list > names.list
 
 newnamer: SHELL:=/bin/bash
-newnamer: fullList names.list workingList
+newnamer: fullList names.list newList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval CWD := $(shell pwd))
 	COUNTZERO=0
 	while read NAME DOMAIN; \
 		do \
 		((COUNTZERO++)) ; \
-		echo "sed -i '$$COUNTZERO s/Not\ Assigned\ null/$$NAME.$$DOMAIN $$NAME/' $(CWD)/workingList"; \
+		echo "sed -i '$$COUNTZERO s/Not\ Assigned\ null/$$NAME.$$DOMAIN $$NAME/' $(CWD)/newList"; \
 		done < names.list > $(TMP)/working.sh
 	-bash $(TMP)/working.sh
 	@rm -Rf $(TMP)
-	-@cat workingList
+	-@p newList workingList
 
