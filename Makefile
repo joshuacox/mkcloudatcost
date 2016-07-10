@@ -159,7 +159,7 @@ installCurl:
 		do \
 		echo "./curler root $$ROOTPASSWORD $$IP 22"; \
 		done < workingList > $(TMP)/working.sh
-	-@/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
+	-@/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
 keyer:
@@ -168,7 +168,7 @@ keyer:
 		do \
 		echo "./keymaster root $$ROOTPASSWORD $$IP" 22; \
 		done < workingList > $(TMP)/working.sh
-	-@/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
 keyer16222:
@@ -177,7 +177,7 @@ keyer16222:
 		do \
 		echo "./keymaster root $$ROOTPASSWORD $$IP" 16222; \
 		done < workingList > $(TMP)/working.sh
-	-@/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
 tester: listservers workingList
@@ -186,7 +186,7 @@ tester: listservers workingList
 		do \
 		echo "ssh -p16222 root@$$IP 'uname -a ;docker ps'"; \
 		done < workingList > $(TMP)/tester 
-	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/tester
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/tester
 	-@rm -Rf $(TMP)
 
 tester22: listservers workingList
@@ -195,7 +195,7 @@ tester22: listservers workingList
 		do \
 		echo "ssh -p22 root@$$IP 'which curl;uname -a '"; \
 		done < workingList > $(TMP)/tester 
-	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/tester
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/tester
 	-@rm -Rf $(TMP)
 
 sshrebooter: listservers workingList
@@ -204,7 +204,7 @@ sshrebooter: listservers workingList
 		do \
 		echo "ssh -p16222 root@$$IP 'shutdown -r +1 &'"; \
 		done < workingList > $(TMP)/rebooter 
-	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/rebooter
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/rebooter
 	-@rm -Rf $(TMP)
 
 sshrebooter22: listservers workingList
@@ -213,7 +213,7 @@ sshrebooter22: listservers workingList
 		do \
 		echo "ssh -p22 root@$$IP 'shutdown -r +1 &'"; \
 		done < workingList > $(TMP)/rebooter 
-	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/rebooter
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/rebooter
 	-@rm -Rf $(TMP)
 
 keyscan: listservers workingList
@@ -254,7 +254,7 @@ jessiemovein:
 		do \
 		echo "ssh root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/jessie-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
 		done < workingList > $(TMP)/working.sh
-	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
 trustymovein:
@@ -263,7 +263,7 @@ trustymovein:
 		do \
 		echo "ssh root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/trusty-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
 		done < workingList > $(TMP)/working.sh
-	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
 trustymovein16222:
@@ -272,7 +272,7 @@ trustymovein16222:
 		do \
 		echo "ssh -p16222 root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/trusty-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
 		done < workingList > $(TMP)/working.sh
-	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
 centosmovein:
@@ -281,13 +281,13 @@ centosmovein:
 		do \
 		echo "ssh root@$$IP 'echo "nameserver 8.8.8.8" >>/etc/resolv.conf echo "nameserver 8.8.4.4" >>/etc/resolv.conf; echo "DNS1=8.8.8.8" >>/etc/sysconfig/network-scripts/ifcfg-eth0; echo "DNS2=8.8.4.4" >>/etc/sysconfig/network-scripts/ifcfg-eth0'"; \
 		done < workingList > $(TMP)/working.sh
-	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	- rm  $(TMP)/working.sh
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/centos-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
 		done < workingList > $(TMP)/working.sh
-	-/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
 workingList: fullList
