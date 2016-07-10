@@ -10,7 +10,7 @@ auto: trustyauto
 
 trustyauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next trustymovein tester22 sshrebooter22
 
-jessieauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next jessiemovein tester22 sshrebooter22
+jessieauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer installCurl next jessiemovein tester22 sshrebooter22
 
 centosauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next centosmovein tester22 sshrebooter22
 
@@ -157,9 +157,9 @@ installCurl:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
-		echo "./curler root $$ROOTPASSWORD $$IP" 22; \
+		echo "./curler root $$ROOTPASSWORD $$IP 22"; \
 		done < workingList > $(TMP)/working.sh
-	@bash $(TMP)/working.sh
+	-@/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
 keyer:
@@ -168,7 +168,7 @@ keyer:
 		do \
 		echo "./keymaster root $$ROOTPASSWORD $$IP" 22; \
 		done < workingList > $(TMP)/working.sh
-	@bash $(TMP)/working.sh
+	-@/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
 keyer16222:
@@ -177,7 +177,7 @@ keyer16222:
 		do \
 		echo "./keymaster root $$ROOTPASSWORD $$IP" 16222; \
 		done < workingList > $(TMP)/working.sh
-	@bash $(TMP)/working.sh
+	-@/usr/bin/time parallel  --jobs 5 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
 
 tester: listservers workingList
@@ -240,6 +240,7 @@ clean:
 	-@rm -f namer
 	-@rm -f hostnamer
 	-@rm -f fullList
+	-@rm -f workingList
 	-@rm -f listservers
 	-@rm -f listtemplates
 	-@rm -f listtasks
@@ -382,3 +383,5 @@ newnamer: fullList names.list newList
 	@rm -Rf $(TMP)
 	-@mv -i newList workingList
 
+requirements:
+	apt-get install rsnapshot parallel rsync git jq

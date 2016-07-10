@@ -8,6 +8,6 @@ spawn ssh -p $port $username@$ip
 expect "assword:"
 send "$password\r"
 expect "#"
-send "reboot \r"
+send "echo 'deb http://httpredir.debian.org/debian jessie main contrib non-free'> /etc/apt/sources.list; DEBIAN_FRONTEND=noninteractive apt-get -qq update; apt-get install -yqq curl \r"
 expect "#"
 send "exit \r"
