@@ -1,5 +1,7 @@
 #!/bin/bash
 echo 'deb http://httpredir.debian.org/debian jessie main contrib non-free'> /etc/apt/sources.list
+cat /etc/apt/sources.list
+echo 'fuck you apt'
 
 apt-get update -yqq
 

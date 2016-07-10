@@ -10,7 +10,9 @@ auto: trustyauto
 
 trustyauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next trustymovein tester22 sshrebooter22
 
-jessieauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer workingList keyscan installCurl keyer jessiemovein tester22 sshrebooter22
+jessieauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer workingList keyscan 
+	
+jessinext: installCurl keyer jessiemovein tester22 sshrebooter22
 
 centosauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next centosmovein tester22 sshrebooter22
 
