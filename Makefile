@@ -384,4 +384,4 @@ newnamer: fullList names.list newList
 	-@mv -i newList workingList
 
 requirements:
-	apt-get install rsnapshot parallel rsync git jq
+	apt-get install rsnapshot parallel rsync git jq build-essential
