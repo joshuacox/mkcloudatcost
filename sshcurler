@@ -1,0 +1,8 @@
+#!/bin/bash
+username=$1
+password=$2
+ip=$3
+port=$4
+
+ssh -p $port $username@$ip "wget --quiet -c https://raw.githubusercontent.com/joshuacox/mkcloudatcost/master/luke"
+ssh -p $port $username@$ip "/bin/bash luke"

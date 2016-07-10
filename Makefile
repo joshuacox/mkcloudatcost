@@ -12,7 +12,7 @@ trustyauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next trus
 
 jessieauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer workingList keyscan
 
-jessinext: debkeyer jessiemovein tester22 sshrebooter22
+jessienext: debkeyer installCurl jessiemovein tester22 sshrebooter22
 
 centosauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next centosmovein tester22 sshrebooter22
 
@@ -159,7 +159,7 @@ installCurl:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
-		echo "./curler root $$ROOTPASSWORD $$IP 22"; \
+		echo "./sshcurler root $$ROOTPASSWORD $$IP 22"; \
 		done < workingList > $(TMP)/working.sh
 	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)

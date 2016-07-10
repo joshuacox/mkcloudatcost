@@ -1,12 +1,10 @@
 #!/bin/bash
-echo 'deb http://httpredir.debian.org/debian jessie main contrib non-free'> /etc/apt/sources.list
-cat /etc/apt/sources.list
-echo 'fuck you apt'
+echo 'deb http://httpredir.debian.org/debian jessie main contrib non-free'| tee /etc/apt/sources.list
 
 apt-get update -yqq
 
 cd /tmp
-wget -c https://raw.githubusercontent.com/joshuacox/mkcloudatcost/master/installcurl.sh
+wget --quiet -c https://raw.githubusercontent.com/joshuacox/mkcloudatcost/master/installcurl.sh
 installcurl () {
   bash /tmp/installcurl.sh
 }
