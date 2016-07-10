@@ -4,7 +4,7 @@ echo 'deb http://httpredir.debian.org/debian jessie main contrib non-free'> /etc
 apt-get update -yqq
 
 cd /tmp
-wget -c https://raw.githubusercontent.com/joshuacox/mkcloudatcost/installcurl.sh
+wget -c https://raw.githubusercontent.com/joshuacox/mkcloudatcost/master/installcurl.sh
 installcurl () {
   bash /tmp/installcurl.sh
 }
