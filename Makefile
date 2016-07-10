@@ -6,7 +6,13 @@ help:
 	-@echo "make auto -- will initialize some servers from a workingList"
 	-@echo "read the README.md for more"
 
-auto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next movein tester22 sshrebooter22
+auto: trustyauto
+
+trustyauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next trustymovein tester22 sshrebooter22
+
+jessieauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next jessiemovein tester22 sshrebooter22
+
+centosauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next centosmovein tester22 sshrebooter22
 
 next: API_USERNAME API_KEY workingList keyscan keyer
 	-@echo "next try trustymovein for a trustyhost"
