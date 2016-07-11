@@ -10,7 +10,7 @@ auto: trustyauto
 
 trustyauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next trustymovein tester22 sshrebooter22
 
-jessieauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer workingList keyscan
+jessieauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer workingList keyscan jessienext
 
 jessienext: debkeyer installCurl jessiemovein tester22 sshrebooter22
 
