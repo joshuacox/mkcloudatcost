@@ -8,16 +8,19 @@ help:
 
 auto: trustyauto
 
-trustyauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next trustymovein tester22 sshrebooter22
+trustyauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer trustynext
+
+trustynext: API_USERNAME API_KEY workingList keyscan keyer trustymovein tester22 sshrebooter22
+	-@echo "next try trustymovein for a trustyhost"
 
 jessieauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer workingList keyscan jessienext
 
 jessienext: debkeyer installCurl jessiemovein tester22 sshrebooter22
 
-centosauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer next centosmovein tester22 sshrebooter22
+centosauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer centosnext
 
-next: API_USERNAME API_KEY workingList keyscan keyer
-	-@echo "next try trustymovein for a trustyhost"
+centosnext: API_USERNAME API_KEY workingList keyscan keyer centosmovein tester22 sshrebooter22
+	-@echo "next try centosmovein for a centoshost"
 
 listtemplates:
 	$(eval API_KEY := $(shell cat API_KEY))
