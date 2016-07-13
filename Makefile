@@ -145,15 +145,16 @@ rebooter:
 	-/usr/bin/time parallel  --jobs 2 -- < $(TMP)/rebooter
 	@rm -Rf $(TMP)
 
-kargo:
+kargo: SSH_PORT
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval SSH_PORT := $(shell cat SSH_PORT))
 	echo  '#!/bin/bash' > $(TMP)/mkargo.sh
 	echo -n 'kargo prepare --nodes ' >> $(TMP)/mkargo.sh
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo -n "$$NAME[ansible_host=$$IP,">> $(TMP)/mkargo.sh ; \
 		echo -n "ansible_private_key_file=~/.ssh/id_ecdsa,">> $(TMP)/mkargo.sh ; \
-		echo -n "ansible_port=16222,ansible_ssh_user=root] ">> $(TMP)/mkargo.sh ; \
+		echo -n "ansible_port=$$SSH_PORT,ansible_ssh_user=root] ">> $(TMP)/mkargo.sh ; \
 		done < workingList
 	@bash $(TMP)/mkargo.sh
 	@rm -Rf $(TMP)
@@ -362,6 +363,11 @@ f: full
 API_KEY:
 	@while [ -z "$$API_KEY" ]; do \
 		read -r -p "Enter the API KEY you wish to associate with this container [API_KEY]: " API_KEY; echo "$$API_KEY">>API_KEY; cat API_KEY; \
+	done ;
+
+SSH_PORT:
+	@while [ -z "$$SSH_PORT" ]; do \
+		read -r -p "Enter the SSH_PORT you wish to associate with this container [SSH_PORT]: " SSH_PORT; echo "$$SSH_PORT">>SSH_PORT; cat SSH_PORT; \
 	done ;
 
 API_USERNAME:
