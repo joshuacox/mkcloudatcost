@@ -1,7 +1,25 @@
 # mkcloudatcost
 Make a cloudatcost cloud PDQ
 
-## Usage
+## Auto
+
+for the next commands in the future you will be able to precede by incanting 
+`make trusty` (or `make jessie`, `make centos`, etc) a number of times which will
+create a trusty (jessie/centos) host each time,
+but the API is broken for now, 
+so you'll have to create them yourself using the [GUI](https://panel.cloudatcost.com/)
+
+Then once you have some fresh unnamed hosts, you can use my auto provisioners to finish up on them.
+This will change their run mode to normal, which prevents them from turning off in 7 days.
+Then it will rename, and set reverse DNS, key the server, do all normal updates, and install the newest docker.
+
+`make auto` this will prepare a trusty host for docker hosting
+
+`make jessieauto` this will prepare a jessie host for docker hosting
+
+`make centosauto` this will prepare a centos host for docker hosting
+
+## Detailed Usage
 
 ### make fullList
 
@@ -49,3 +67,15 @@ deleter:
 	-/bin/bash $(TMP)/deleter
 	-@rm -Rf $(TMP)
 ```
+
+### Kargo (WIP)
+
+`make kargo` should get you a kargo cluster made out of the `workingList`,
+at the moment this only works on centos machines using port22, I'm working that though
+
+`make kargoConfig` should use the first master (the first machine in the `workingList`), 
+grab the certs, and setup `~/.kube/config` for you, this WIP though, thar be dragons
+
+### Waffle.io
+
+[![Stories in Ready](https://badge.waffle.io/joshuacox/mkcloudatcost.svg?label=ready&title=Ready)](http://waffle.io/joshuacox/mkcloudatcost)
