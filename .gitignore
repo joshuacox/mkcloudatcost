@@ -16,3 +16,8 @@ fullList
 workingList
 workingList*
 names.list
+certs
+K8S_PASSWD
+SSH_PORT
+SSH_KEY
+KUBE_NETWORK

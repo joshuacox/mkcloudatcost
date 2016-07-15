@@ -157,7 +157,38 @@ kargo: SSH_PORT
 		echo -n "ansible_port=$(SSH_PORT),ansible_ssh_user=root] ">> $(TMP)/mkargo.sh ; \
 		done < workingList
 	@bash $(TMP)/mkargo.sh
+	cd ~/kargo
+	kargo deploy 
 	@rm -Rf $(TMP)
+
+kargoConfig:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval SSH_PORT := $(shell cat SSH_PORT))
+	$(eval PWD := $(shell `pwd`))
+	head -n1 workingList > $(TMP)/masterList
+	echo  '#!/bin/bash' > $(TMP)/mkargo.sh
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		mkdir -p certs/$$NAME ; \
+	    echo "scp -P $(SSH_PORT) root@$$IP:/etc/kubernetes/ssl/admin-key.pem certs/$$NAME/" >> $(TMP)/mkargo.sh ; \
+	    echo "scp -P $(SSH_PORT) root@$$IP:/etc/kubernetes/ssl/ca.pem certs/$$NAME/" >> $(TMP)/mkargo.sh ; \
+	    echo "scp -P $(SSH_PORT) root@$$IP:/etc/kubernetes/ssl/admin.pem certs/$$NAME/" >> $(TMP)/mkargo.sh ; \
+		echo -n "kubectl config set-cluster default-cluster " >> $(TMP)/mkargo.sh ; \
+		echo -n " --embed-certs=true  " >> $(TMP)/mkargo.sh ; \
+		echo -n " --server=https://$$IP " >> $(TMP)/mkargo.sh ; \
+		echo " --certificate-authority=$(PWD)/certs/$$NAME/ca.pem " >> $(TMP)/mkargo.sh ; \
+		echo -n "kubectl config set-credentials default-admin " >> $(TMP)/mkargo.sh ; \
+		echo -n " --kubeconfig=~/.kube/config  " >> $(TMP)/mkargo.sh ; \
+		echo -n " --embed-certs=true  " >> $(TMP)/mkargo.sh ; \
+		echo -n " --certificate-authority=$(PWD)/certs/$$NAME/ca.pem " >> $(TMP)/mkargo.sh ; \
+		echo -n " --client-key=$(PWD)/certs/$$NAME/admin-key.pem " >> $(TMP)/mkargo.sh ; \
+		echo " --client-certificate=$(PWD)/certs/$$NAME/admin.pem " >> $(TMP)/mkargo.sh ; \
+		echo -n "kubectl config set-context default-system " >> $(TMP)/mkargo.sh ; \
+		echo " --cluster=default-cluster --user=default-admin " >> $(TMP)/mkargo.sh ; \
+		done < $(TMP)/masterList
+	@bash $(TMP)/mkargo.sh
+	@rm -Rf $(TMP)
+
 
 installCurl:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -260,6 +291,7 @@ clean:
 	-@rm -f listtemplates
 	-@rm -f listtasks
 	-@rm -f names.list
+	-@rm -f certs
 
 movein: trustymovein
 
@@ -365,9 +397,24 @@ API_KEY:
 		read -r -p "Enter the API KEY you wish to associate with this container [API_KEY]: " API_KEY; echo "$$API_KEY">>API_KEY; cat API_KEY; \
 	done ;
 
+ASK_K8S_PASSWD:
+	@while [ -z "$$K8S_PASSWD" ]; do \
+		read -r -p "Enter the K8S_PASSWD you wish to associate with this container [K8S_PASSWD]: " K8S_PASSWD; echo "$$K8S_PASSWD">>K8S_PASSWD; cat K8S_PASSWD; \
+	done ;
+
+KUBE_NETWORK:
+	@while [ -z "$$KUBE_NETWORK" ]; do \
+		read -r -p "Enter the KUBE_NETWORK you wish to associate with this container [KUBE_NETWORK]: " KUBE_NETWORK; echo "$$KUBE_NETWORK">>KUBE_NETWORK; cat KUBE_NETWORK; \
+	done ;
+
 SSH_PORT:
 	@while [ -z "$$SSH_PORT" ]; do \
 		read -r -p "Enter the SSH_PORT you wish to associate with this container [SSH_PORT]: " SSH_PORT; echo "$$SSH_PORT">>SSH_PORT; cat SSH_PORT; \
+	done ;
+
+SSH_KEY:
+	@while [ -z "$$SSH_KEY" ]; do \
+		read -r -p "Enter the SSH_KEY you wish to associate with this container [SSH_KEY]: " SSH_KEY; echo "$$SSH_KEY">>SSH_KEY; cat SSH_KEY; \
 	done ;
 
 API_USERNAME:
@@ -405,3 +452,13 @@ newnamer: fullList names.list newList
 
 requirements:
 	apt-get install rsnapshot parallel rsync git jq build-essential
+
+K8S_PASSWD:
+	$(eval K8S_PASSWD := $(shell tr -cd '[:alnum:]' < /dev/urandom | fold -w11 | head -n1 ))
+	-@echo $(K8S_PASSWD) > K8S_PASSWD
+
+example: K8S_PASSWD
+	-@cp -i KUBE_NETWORK.example KUBE_NETWORK
+	-@cp -i SSH_KEY.example SSH_KEY
+	-@cp -i SSH_PORT.example SSH_PORT
+
