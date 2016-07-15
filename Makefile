@@ -20,7 +20,7 @@ jessienext: debkeyer installCurl jessiemovein tester22 sshrebooter22
 centosauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer centosnext
 
 centosnext: API_USERNAME API_KEY workingList keyscan keyer centosmovein tester22 sshrebooter22
-	-@echo "next try centosmovein for a centoshost"
+	-@echo "next try make kargo for a kubernetes cluster"
 
 listtemplates:
 	$(eval API_KEY := $(shell cat API_KEY))
@@ -154,7 +154,7 @@ kargo: SSH_PORT
 		do \
 		echo -n "$$NAME[ansible_host=$$IP,">> $(TMP)/mkargo.sh ; \
 		echo -n "ansible_private_key_file=~/.ssh/id_ecdsa,">> $(TMP)/mkargo.sh ; \
-		echo -n "ansible_port=$$SSH_PORT,ansible_ssh_user=root] ">> $(TMP)/mkargo.sh ; \
+		echo -n "ansible_port=$(SSH_PORT),ansible_ssh_user=root] ">> $(TMP)/mkargo.sh ; \
 		done < workingList
 	@bash $(TMP)/mkargo.sh
 	@rm -Rf $(TMP)
