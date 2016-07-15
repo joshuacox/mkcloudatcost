@@ -145,9 +145,13 @@ rebooter:
 	-/usr/bin/time parallel  --jobs 2 -- < $(TMP)/rebooter
 	@rm -Rf $(TMP)
 
-kargo: SSH_PORT
+kargo: SSH_PORT SSH_KEY KUBE_NETWORK_PLUGIN KUBE_NETWORK K8S_PASSWD
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval K8S_PASSWD := $(shell cat K8S_PASSWD))
+	$(eval KUBE_NETWORK := $(shell cat KUBE_NETWORK))
+	$(eval KUBE_NETWORK_PLUGIN := $(shell cat KUBE_NETWORK_PLUGIN))
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
+	$(eval SSH_KEY := $(shell cat SSH_KEY))
 	echo  '#!/bin/bash' > $(TMP)/mkargo.sh
 	echo -n 'kargo prepare --nodes ' >> $(TMP)/mkargo.sh
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
@@ -158,7 +162,7 @@ kargo: SSH_PORT
 		done < workingList
 	@bash $(TMP)/mkargo.sh
 	cd ~/kargo
-	kargo deploy 
+	kargo deploy -y -n $(KUBE_NETWORK_PLUGIN) --kube-network $(KUBE_NETWORK) --sshkey $(SSH_KEY) --passwd $(K8S_PASSWD)
 	@rm -Rf $(TMP)
 
 kargoConfig:
@@ -397,7 +401,7 @@ API_KEY:
 		read -r -p "Enter the API KEY you wish to associate with this container [API_KEY]: " API_KEY; echo "$$API_KEY">>API_KEY; cat API_KEY; \
 	done ;
 
-ASK_K8S_PASSWD:
+K8S_PASSWD:
 	@while [ -z "$$K8S_PASSWD" ]; do \
 		read -r -p "Enter the K8S_PASSWD you wish to associate with this container [K8S_PASSWD]: " K8S_PASSWD; echo "$$K8S_PASSWD">>K8S_PASSWD; cat K8S_PASSWD; \
 	done ;
@@ -405,6 +409,11 @@ ASK_K8S_PASSWD:
 KUBE_NETWORK:
 	@while [ -z "$$KUBE_NETWORK" ]; do \
 		read -r -p "Enter the KUBE_NETWORK you wish to associate with this container [KUBE_NETWORK]: " KUBE_NETWORK; echo "$$KUBE_NETWORK">>KUBE_NETWORK; cat KUBE_NETWORK; \
+	done ;
+
+KUBE_NETWORK_PLUGIN:
+	@while [ -z "$$KUBE_NETWORK_PLUGIN" ]; do \
+		read -r -p "Enter the KUBE_NETWORK_PLUGIN you wish to associate with this container [flannel, calico, weave KUBE_NETWORK_PLUGIN]: " KUBE_NETWORK_PLUGIN; echo "$$KUBE_NETWORK_PLUGIN">>KUBE_NETWORK_PLUGIN; cat KUBE_NETWORK_PLUGIN; \
 	done ;
 
 SSH_PORT:
@@ -453,12 +462,10 @@ newnamer: fullList names.list newList
 requirements:
 	apt-get install rsnapshot parallel rsync git jq build-essential
 
-K8S_PASSWD:
-	$(eval K8S_PASSWD := $(shell tr -cd '[:alnum:]' < /dev/urandom | fold -w11 | head -n1 ))
+example:
+	$(eval K8S_PASSWD := $(shell tr -cd '[:alnum:]' < /dev/urandom | fold -w23 | head -n1 ))
 	-@echo $(K8S_PASSWD) > K8S_PASSWD
-
-example: K8S_PASSWD
 	-@cp -i KUBE_NETWORK.example KUBE_NETWORK
+	-@cp -i KUBE_NETWORK_PLUGIN.example KUBE_NETWORK_PLUGIN
 	-@cp -i SSH_KEY.example SSH_KEY
 	-@cp -i SSH_PORT.example SSH_PORT
-
