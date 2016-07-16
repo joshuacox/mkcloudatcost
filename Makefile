@@ -168,7 +168,7 @@ kargo: SSH_PORT SSH_KEY KUBE_NETWORK_PLUGIN KUBE_NETWORK K8S_PASSWD
 kargoConfig:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
-	$(eval PWD := $(shell `pwd`))
+	$(eval PWD := $(shell pwd))
 	head -n1 workingList > $(TMP)/masterList
 	echo  '#!/bin/bash' > $(TMP)/mkargo.sh
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
@@ -178,17 +178,20 @@ kargoConfig:
 	    echo "scp -P $(SSH_PORT) root@$$IP:/etc/kubernetes/ssl/ca.pem certs/$$NAME/" >> $(TMP)/mkargo.sh ; \
 	    echo "scp -P $(SSH_PORT) root@$$IP:/etc/kubernetes/ssl/admin.pem certs/$$NAME/" >> $(TMP)/mkargo.sh ; \
 		echo -n "kubectl config set-cluster default-cluster " >> $(TMP)/mkargo.sh ; \
+		echo -n " --kubeconfig=/root/.kube/config " >> $(TMP)/mkargo.sh ; \
 		echo -n " --embed-certs=true  " >> $(TMP)/mkargo.sh ; \
 		echo -n " --server=https://$$IP " >> $(TMP)/mkargo.sh ; \
 		echo " --certificate-authority=$(PWD)/certs/$$NAME/ca.pem " >> $(TMP)/mkargo.sh ; \
 		echo -n "kubectl config set-credentials default-admin " >> $(TMP)/mkargo.sh ; \
-		echo -n " --kubeconfig=~/.kube/config  " >> $(TMP)/mkargo.sh ; \
-		echo -n " --embed-certs=true  " >> $(TMP)/mkargo.sh ; \
+		echo -n " --kubeconfig=/root/.kube/config " >> $(TMP)/mkargo.sh ; \
+		echo -n " --embed-certs=true " >> $(TMP)/mkargo.sh ; \
 		echo -n " --certificate-authority=$(PWD)/certs/$$NAME/ca.pem " >> $(TMP)/mkargo.sh ; \
 		echo -n " --client-key=$(PWD)/certs/$$NAME/admin-key.pem " >> $(TMP)/mkargo.sh ; \
 		echo " --client-certificate=$(PWD)/certs/$$NAME/admin.pem " >> $(TMP)/mkargo.sh ; \
 		echo -n "kubectl config set-context default-system " >> $(TMP)/mkargo.sh ; \
+		echo -n " --kubeconfig=/root/.kube/config " >> $(TMP)/mkargo.sh ; \
 		echo " --cluster=default-cluster --user=default-admin " >> $(TMP)/mkargo.sh ; \
+		echo "kubectl config use-context default-system " >> $(TMP)/mkargo.sh ; \
 		done < $(TMP)/masterList
 	@bash $(TMP)/mkargo.sh
 	@rm -Rf $(TMP)
