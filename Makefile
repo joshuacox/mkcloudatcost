@@ -145,7 +145,54 @@ rebooter:
 	-/usr/bin/time parallel  --jobs 2 -- < $(TMP)/rebooter
 	@rm -Rf $(TMP)
 
-kargo: SSH_PORT SSH_KEY KUBE_NETWORK_PLUGIN KUBE_NETWORK K8S_PASSWD
+gluster: glusterPrep
+
+glusterPrep: kargoPrep
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval KARGO_INVENTORY := $(shell echo '~/kargo/inventory/inventory.cfg'))
+	$(eval SSH_PORT := $(shell cat SSH_PORT))
+	$(eval SSH_KEY := $(shell cat SSH_KEY))
+	echo  '#!/bin/bash' > $(TMP)/working.sh
+	cd $(TMP) ; \
+	wget https://github.com/joshuacox/mkgluster/archive/master.zip ; \
+	unzip master.zip
+	echo '[all]'> $(TMP)/mkgluster-master/inventory
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo -n "$$NAME\t ansible_host=$$IP ">> $(TMP)/mkgluster-master/inventory ; \
+		echo -n ' ansible_ssh_user=root' >> $(TMP)/mkgluster-master/inventory ; \
+		echo -n ' ansible_ssh_private_key_file=$(SSH_KEY)' >> $(TMP)/mkgluster-master/inventory ; \
+		echo " ansible_port=$(SSH_PORT)" >> $(TMP)/mkgluster-master/inventory ; \
+		done < workingList
+	echo ''>> $(TMP)/mkgluster-master/inventory
+	echo '[gluster]'>> $(TMP)/mkgluster-master/inventory
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "$$NAME">> $(TMP)/mkgluster-master/inventory ; \
+		done < workingList
+	echo ''>> $(TMP)/mkgluster-master/inventory
+	sed -i 's/\[kube-node\]/[gluster]/g' $(TMP)/mkgluster-master/inventory
+	cd $(TMP)/mkgluster-master/ ; \
+	echo 'cd $(TMP)/mkgluster-master' >> $(TMP)/working.sh ; \
+	echo 'cat inventory' >> $(TMP)/working.sh ; \
+	echo 'ansible --version' >> $(TMP)/working.sh ; \
+	echo 'sleep 3' >> $(TMP)/working.sh ; \
+	cd $(TMP)/mkgluster-master/ ; \
+	echo 'ansible -m ping -i inventory all'>> $(TMP)/working.sh
+	echo 'make gluster'>> $(TMP)/working.sh
+	bash $(TMP)/working.sh
+	#make gluster
+	@rm -Rf $(TMP)
+
+fuckit:
+	echo '[gluster:vars]' >> $(TMP)/mkgluster-master/inventory
+	echo 'ansible_ssh_user=root' >> $(TMP)/mkgluster-master/inventory
+	echo 'ansible_ssh_private_key_file=$(SSH_KEY)' >> $(TMP)/mkgluster-master/inventory
+	echo " ansible_port=$(SSH_PORT)" >> $(TMP)/mkgluster-master/inventory ; \
+
+kargo: kargoPrep kargoRun kargoConfig
+
+kargoPrep: SSH_PORT SSH_KEY KUBE_NETWORK_PLUGIN KUBE_NETWORK K8S_PASSWD
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval K8S_PASSWD := $(shell cat K8S_PASSWD))
 	$(eval KUBE_NETWORK := $(shell cat KUBE_NETWORK))
@@ -161,8 +208,21 @@ kargo: SSH_PORT SSH_KEY KUBE_NETWORK_PLUGIN KUBE_NETWORK K8S_PASSWD
 		echo -n "ansible_port=$(SSH_PORT),ansible_ssh_user=root] ">> $(TMP)/mkargo.sh ; \
 		done < workingList
 	@bash $(TMP)/mkargo.sh
-	cd ~/kargo
-	kargo deploy -y -n $(KUBE_NETWORK_PLUGIN) --kube-network $(KUBE_NETWORK) --sshkey $(SSH_KEY) --passwd $(K8S_PASSWD)
+	@rm -Rf $(TMP)
+
+kargoRun: SSH_PORT SSH_KEY KUBE_NETWORK_PLUGIN KUBE_NETWORK K8S_PASSWD
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval K8S_PASSWD := $(shell cat K8S_PASSWD))
+	$(eval KUBE_NETWORK := $(shell cat KUBE_NETWORK))
+	$(eval KUBE_NETWORK_PLUGIN := $(shell cat KUBE_NETWORK_PLUGIN))
+	$(eval SSH_PORT := $(shell cat SSH_PORT))
+	$(eval SSH_KEY := $(shell cat SSH_KEY))
+	echo  '#!/bin/bash' > $(TMP)/kargo.sh
+	echo 'cd ~/kargo'>$(TMP)/kargo.sh
+	echo -n "kargo deploy -y -n $(KUBE_NETWORK_PLUGIN) ">$(TMP)/kargo.sh
+	echo -n " --kube-network $(KUBE_NETWORK) --sshkey $(SSH_KEY) ">$(TMP)/kargo.sh
+	echo " --passwd $(K8S_PASSWD)">$(TMP)/kargo.sh
+	@bash $(TMP)/kargo.sh
 	@rm -Rf $(TMP)
 
 kargoConfig:
@@ -298,7 +358,7 @@ clean:
 	-@rm -f listtemplates
 	-@rm -f listtasks
 	-@rm -f names.list
-	-@rm -f certs
+	-@rm -Rf certs
 
 movein: trustymovein
 
