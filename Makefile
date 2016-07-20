@@ -147,7 +147,7 @@ rebooter:
 
 gluster: glusterPrep
 
-glusterPrep: kargoPrep
+glusterPrep:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval KARGO_INVENTORY := $(shell echo '~/kargo/inventory/inventory.cfg'))
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
@@ -178,6 +178,7 @@ glusterPrep: kargoPrep
 	echo 'ansible --version' >> $(TMP)/working.sh ; \
 	echo 'sleep 3' >> $(TMP)/working.sh ; \
 	cd $(TMP)/mkgluster-master/ ; \
+	echo 'export ANSIBLE_SCP_IF_SSH=y'>> $(TMP)/working.sh
 	echo 'ansible -m ping -i inventory all'>> $(TMP)/working.sh
 	echo 'make gluster'>> $(TMP)/working.sh
 	bash $(TMP)/working.sh
@@ -200,6 +201,7 @@ kargoPrep: SSH_PORT SSH_KEY KUBE_NETWORK_PLUGIN KUBE_NETWORK K8S_PASSWD
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
 	$(eval SSH_KEY := $(shell cat SSH_KEY))
 	echo  '#!/bin/bash' > $(TMP)/mkargo.sh
+	echo 'export ANSIBLE_SCP_IF_SSH=y'>> $(TMP)/mkargo.sh
 	echo -n 'kargo prepare --nodes ' >> $(TMP)/mkargo.sh
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
@@ -218,6 +220,7 @@ kargoRun: SSH_PORT SSH_KEY KUBE_NETWORK_PLUGIN KUBE_NETWORK K8S_PASSWD
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
 	$(eval SSH_KEY := $(shell cat SSH_KEY))
 	echo  '#!/bin/bash' > $(TMP)/kargo.sh
+	echo 'export ANSIBLE_SCP_IF_SSH=y'>> $(TMP)/kargo.sh
 	echo 'cd ~/kargo'>$(TMP)/kargo.sh
 	echo -n "kargo deploy -y -n $(KUBE_NETWORK_PLUGIN) ">$(TMP)/kargo.sh
 	echo -n " --kube-network $(KUBE_NETWORK) --sshkey $(SSH_KEY) ">$(TMP)/kargo.sh
@@ -231,6 +234,7 @@ kargoConfig:
 	$(eval PWD := $(shell pwd))
 	head -n1 workingList > $(TMP)/masterList
 	echo  '#!/bin/bash' > $(TMP)/mkargo.sh
+	echo 'export ANSIBLE_SCP_IF_SSH=y'>> $(TMP)/mkargo.sh
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		mkdir -p certs/$$NAME ; \
