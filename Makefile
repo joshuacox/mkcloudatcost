@@ -221,10 +221,10 @@ kargoRun: SSH_PORT SSH_KEY KUBE_NETWORK_PLUGIN KUBE_NETWORK K8S_PASSWD
 	$(eval SSH_KEY := $(shell cat SSH_KEY))
 	echo  '#!/bin/bash' > $(TMP)/kargo.sh
 	echo 'export ANSIBLE_SCP_IF_SSH=y'>> $(TMP)/kargo.sh
-	echo 'cd ~/kargo'>$(TMP)/kargo.sh
-	echo -n "kargo deploy -y -n $(KUBE_NETWORK_PLUGIN) ">$(TMP)/kargo.sh
-	echo -n " --kube-network $(KUBE_NETWORK) --sshkey $(SSH_KEY) ">$(TMP)/kargo.sh
-	echo " --passwd $(K8S_PASSWD)">$(TMP)/kargo.sh
+	echo 'cd ~/kargo'>>$(TMP)/kargo.sh
+	echo -n "kargo deploy -y -n $(KUBE_NETWORK_PLUGIN) ">>$(TMP)/kargo.sh
+	echo -n " --kube-network $(KUBE_NETWORK) --sshkey $(SSH_KEY) ">>$(TMP)/kargo.sh
+	echo " --passwd $(K8S_PASSWD)">>$(TMP)/kargo.sh
 	@bash $(TMP)/kargo.sh
 	@rm -Rf $(TMP)
 
