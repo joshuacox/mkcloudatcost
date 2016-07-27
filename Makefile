@@ -536,3 +536,14 @@ example:
 	-@cp -i KUBE_NETWORK_PLUGIN.example KUBE_NETWORK_PLUGIN
 	-@cp -i SSH_KEY.example SSH_KEY
 	-@cp -i SSH_PORT.example SSH_PORT
+
+freeipa:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval SSH_PORT := $(shell cat SSH_PORT))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p$(SSH_PORT) root@$$IP 'git clone https://github.com/joshuacox/mkFreeIPA.git; cd mkFreeIPA; make auto '"; \
+		done < workingList > $(TMP)/working.sh 
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
+	-@rm -Rf $(TMP)
+
