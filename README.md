@@ -71,10 +71,15 @@ deleter:
 ### Kargo (WIP)
 
 `make kargo` should get you a kargo cluster made out of the `workingList`,
-at the moment this only works on centos machines using port22, I'm working that though
+at the moment this only works on centos machines using port22, I'm working on that though
 
 `make kargoConfig` should use the first master (the first machine in the `workingList`), 
 grab the certs, and setup `~/.kube/config` for you, this WIP though, thar be dragons
+
+### Gluster (WIP)
+
+`make gluster` should get you a cluster of glusterFS made out of the `workingList`,
+at the moment this only works on Trusty hosts as the ansible was written by Geerling for Trusty
 
 ### Waffle.io
 
