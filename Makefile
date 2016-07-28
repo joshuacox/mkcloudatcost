@@ -463,39 +463,44 @@ full: fullList
 
 f: full
 
+DOMAIN:
+	@while [ -z "$$DOMAIN" ]; do \
+		read -r -p "Enter the DOMAIN you wish to associate with this cluster [DOMAIN]: " DOMAIN; echo "$$DOMAIN">>DOMAIN; cat DOMAIN; \
+	done ;
+
 API_KEY:
 	@while [ -z "$$API_KEY" ]; do \
-		read -r -p "Enter the API KEY you wish to associate with this container [API_KEY]: " API_KEY; echo "$$API_KEY">>API_KEY; cat API_KEY; \
+		read -r -p "Enter the API KEY you wish to associate with this cluster [API_KEY]: " API_KEY; echo "$$API_KEY">>API_KEY; cat API_KEY; \
 	done ;
 
 K8S_PASSWD:
 	@while [ -z "$$K8S_PASSWD" ]; do \
-		read -r -p "Enter the K8S_PASSWD you wish to associate with this container [K8S_PASSWD]: " K8S_PASSWD; echo "$$K8S_PASSWD">>K8S_PASSWD; cat K8S_PASSWD; \
+		read -r -p "Enter the K8S_PASSWD you wish to associate with this cluster [K8S_PASSWD]: " K8S_PASSWD; echo "$$K8S_PASSWD">>K8S_PASSWD; cat K8S_PASSWD; \
 	done ;
 
 KUBE_NETWORK:
 	@while [ -z "$$KUBE_NETWORK" ]; do \
-		read -r -p "Enter the KUBE_NETWORK you wish to associate with this container [KUBE_NETWORK]: " KUBE_NETWORK; echo "$$KUBE_NETWORK">>KUBE_NETWORK; cat KUBE_NETWORK; \
+		read -r -p "Enter the KUBE_NETWORK you wish to associate with this cluster [KUBE_NETWORK]: " KUBE_NETWORK; echo "$$KUBE_NETWORK">>KUBE_NETWORK; cat KUBE_NETWORK; \
 	done ;
 
 KUBE_NETWORK_PLUGIN:
 	@while [ -z "$$KUBE_NETWORK_PLUGIN" ]; do \
-		read -r -p "Enter the KUBE_NETWORK_PLUGIN you wish to associate with this container [flannel, calico, weave KUBE_NETWORK_PLUGIN]: " KUBE_NETWORK_PLUGIN; echo "$$KUBE_NETWORK_PLUGIN">>KUBE_NETWORK_PLUGIN; cat KUBE_NETWORK_PLUGIN; \
+		read -r -p "Enter the KUBE_NETWORK_PLUGIN you wish to associate with this cluster [flannel, calico, weave KUBE_NETWORK_PLUGIN]: " KUBE_NETWORK_PLUGIN; echo "$$KUBE_NETWORK_PLUGIN">>KUBE_NETWORK_PLUGIN; cat KUBE_NETWORK_PLUGIN; \
 	done ;
 
 SSH_PORT:
 	@while [ -z "$$SSH_PORT" ]; do \
-		read -r -p "Enter the SSH_PORT you wish to associate with this container [SSH_PORT]: " SSH_PORT; echo "$$SSH_PORT">>SSH_PORT; cat SSH_PORT; \
+		read -r -p "Enter the SSH_PORT you wish to associate with this cluster [SSH_PORT]: " SSH_PORT; echo "$$SSH_PORT">>SSH_PORT; cat SSH_PORT; \
 	done ;
 
 SSH_KEY:
 	@while [ -z "$$SSH_KEY" ]; do \
-		read -r -p "Enter the SSH_KEY you wish to associate with this container [SSH_KEY]: " SSH_KEY; echo "$$SSH_KEY">>SSH_KEY; cat SSH_KEY; \
+		read -r -p "Enter the SSH_KEY you wish to associate with this cluster [SSH_KEY]: " SSH_KEY; echo "$$SSH_KEY">>SSH_KEY; cat SSH_KEY; \
 	done ;
 
 API_USERNAME:
 	@while [ -z "$$API_USERNAME" ]; do \
-		read -r -p "Enter the API USERNAME you wish to associate with this container [API_USERNAME]: " API_USERNAME; echo "$$API_USERNAME">>API_USERNAME; cat API_USERNAME; \
+		read -r -p "Enter the API USERNAME you wish to associate with this cluster [API_USERNAME]: " API_USERNAME; echo "$$API_USERNAME">>API_USERNAME; cat API_USERNAME; \
 	done ;
 
 names.list: fullList
