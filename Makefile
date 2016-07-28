@@ -446,14 +446,15 @@ enter22:
 	@rm -Rf $(TMP)
 
 generals: SHELL:=/bin/bash
-generals:	workingList
+generals:	workingList DOMAIN
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval CWD := $(shell pwd))
+	$(eval DOMAIN := $(shell cat DOMAIN))
 	COUNTZERO=0
-	while read NAME DOMAIN; \
+	while read NAME; \
 		do \
 		((COUNTZERO++)) ; \
-		echo "sed -i '$$COUNTZERO s/Not\ Assigned\ null/$$NAME.$$DOMAIN $$NAME/' $(CWD)/workingList"; \
+		echo "sed -i '$$COUNTZERO s/Not\ Assigned\ null/$$NAME.$(DOMAIN) $$NAME/' $(CWD)/workingList"; \
 		done < generals.txt > $(TMP)/working.sh
 	-bash $(TMP)/working.sh
 	@rm -Rf $(TMP)
@@ -518,14 +519,15 @@ names.list: fullList
 	cat $(TMP)/names.list > names.list
 
 newnamer: SHELL:=/bin/bash
-newnamer: fullList names.list newList
+newnamer: fullList names.list newList DOMAIN
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval CWD := $(shell pwd))
+	$(eval DOMAIN := $(shell cat DOMAIN))
 	COUNTZERO=0
-	while read NAME DOMAIN; \
+	while read NAME; \
 		do \
 		((COUNTZERO++)) ; \
-		echo "sed -i '$$COUNTZERO s/Not\ Assigned\ null/$$NAME.$$DOMAIN $$NAME/' $(CWD)/newList"; \
+		echo "sed -i '$$COUNTZERO s/Not\ Assigned\ null/$$NAME.$(DOMAIN) $$NAME/' $(CWD)/newList"; \
 		done < names.list > $(TMP)/working.sh
 	-bash $(TMP)/working.sh
 	@rm -Rf $(TMP)
