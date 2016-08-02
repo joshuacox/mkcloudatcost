@@ -3,7 +3,7 @@ Make a cloudatcost cloud PDQ
 
 ## Auto
 
-for the next commands in the future you will be able to precede by incanting 
+for the next commands in the future you will be able to precede by incanting
 `make trusty` (or `make jessie`, `make centos`, etc) a number of times which will
 create a trusty (jessie/centos) host each time,
 but the API is broken for now, 
@@ -71,8 +71,8 @@ cat names.list
 
 ### deleter
 
-a delete function is not included for good reasons, 
-but every now and then I want to delete enmasse, 
+a delete function is not included for good reasons,
+but every now and then I want to delete enmasse,
 and I copy this section in and double check my `workingList` twice to not be naughty but nice!
 
 ```
