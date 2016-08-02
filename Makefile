@@ -567,3 +567,22 @@ getvipernames:
 	cp $(TMP)/vipers /tmp/vipers
 	rm -Rf $(TMP)
 
+redmine:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval SSH_PORT := $(shell cat SSH_PORT))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p$(SSH_PORT) root@$$IP 'git clone https://github.com/joshuacox/mkRedmine.git; cd mkRedmine; make init '"; \
+		done < workingList > $(TMP)/working.sh 
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
+	-@rm -Rf $(TMP)
+
+nginx:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval SSH_PORT := $(shell cat SSH_PORT))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p$(SSH_PORT) root@$$IP 'git clone https://github.com/joshuacox/mknginx.git; cd mknginx; make temp '"; \
+		done < workingList > $(TMP)/working.sh 
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
+	-@rm -Rf $(TMP)
