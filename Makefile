@@ -534,7 +534,8 @@ newnamer: fullList names.list newList DOMAIN
 	-@mv -i newList workingList
 
 requirements:
-	apt-get install rsnapshot parallel rsync git jq build-essential
+	apt-get install -y rsnapshot parallel rsync git jq build-essential cpanminus
+	cpanm HTML::TokeParser
 
 example:
 	$(eval K8S_PASSWD := $(shell tr -cd '[:alnum:]' < /dev/urandom | fold -w23 | head -n1 ))
