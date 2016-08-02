@@ -554,3 +554,12 @@ freeipa:
 	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	-@rm -Rf $(TMP)
 
+getvipernames:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	cp toke.pl $(TMP)/
+	cd $(TMP); wget https://en.wikipedia.org/wiki/Category:Viperinae_by_common_name ; \
+	mv Category:Viperinae_by_common_name index.html ; \
+	perl toke.pl|sed  's/\s//g'|tr '[:upper:]' '[:lower:]' >$(TMP)/vipers
+	cp $(TMP)/vipers /tmp/vipers
+	rm -Rf $(TMP)
+
