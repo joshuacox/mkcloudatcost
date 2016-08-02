@@ -504,9 +504,12 @@ API_USERNAME:
 		read -r -p "Enter the API USERNAME you wish to associate with this cluster [API_USERNAME]: " API_USERNAME; echo "$$API_USERNAME">>API_USERNAME; cat API_USERNAME; \
 	done ;
 
-names.list: fullList
+chosenNames:
+	cat *.names > chosenNames
+
+names.list: chosenNames fullList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	cat *.names > $(TMP)/names.list
+	cat chosenNames > $(TMP)/names.list
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 	    cat $(TMP)/names.list|grep -v $$NAME > $(TMP)/names.list.tmp ; \

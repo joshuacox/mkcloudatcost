@@ -43,9 +43,31 @@ it will look something like this:
  should build you a trusty machine, but the API is not working with the newest datacenter (DC3) and as we are only able to provision into that datacenter this is broken for now
  but should work with cloudatcost fixes things on their end
 
-### make movein
+### make auto
 
 `make movein` this will execute my movein script on a fresh trusty instance getting you a 3.19 kernel docker 1.11 and overlayFS as your storage driver
+
+### make jessieauto
+
+much like `make auto` but intended for jessie machines
+
+### make centosauto
+
+much like auto but for centos7 machines
+
+### auto naming
+
+All of the auto methods above invoke `make names.list`, which invokes `make chosenNames`,
+if you wanted to override and only use the greek gods,
+simply copy that list to chosenNames and the Makefile will skip that step,
+
+e.g.
+```
+cp greekgods.names chosenNames
+rm names.list
+make names.list
+cat names.list
+```
 
 ### deleter
 
