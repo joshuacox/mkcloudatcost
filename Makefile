@@ -592,7 +592,7 @@ diaspora:
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
-		echo "ssh -p$(SSH_PORT) root@$$IP 'git clone https://github.com/Chocobozzz/Diaspora-Docker.git  ; cd diaspora-docker/scripts; echo build.sh '"; \
+		echo "ssh -p$(SSH_PORT) root@$$IP 'git clone https://github.com/Chocobozzz/Diaspora-Docker.git  ; cd Diaspora-Docker/scripts; echo build.sh '"; \
 		done < workingList > $(TMP)/working.sh 
 	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	-@rm -Rf $(TMP)
