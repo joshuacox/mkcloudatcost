@@ -586,3 +586,14 @@ nginx:
 		done < workingList > $(TMP)/working.sh 
 	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	-@rm -Rf $(TMP)
+
+diaspora:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval SSH_PORT := $(shell cat SSH_PORT))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p$(SSH_PORT) root@$$IP 'git clone https://github.com/Chocobozzz/Diaspora-Docker.git  ; cd diaspora-docker/scripts; echo build.sh '"; \
+		done < workingList > $(TMP)/working.sh 
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
+	-@rm -Rf $(TMP)
+
