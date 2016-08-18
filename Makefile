@@ -608,4 +608,14 @@ diaspora:
 	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	-@rm -Rf $(TMP)
 
-filler: freeipa redmine nginx diaspora
+filler: freeipa redmine nginx diaspora fillerRestart
+
+fillerRestart:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval SSH_PORT := $(shell cat SSH_PORT))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "scp -P$(SSH_PORT) restart.sh root@$$IP:/root/restart.sh "; \
+		done < workingList > $(TMP)/working.sh 
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
+	-@rm -Rf $(TMP)
