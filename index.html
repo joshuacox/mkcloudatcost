@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <title>Mkcloudatcost by joshuacox</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Mkcloudatcost</h1>
+        <h2>Make a cloudatcost cloud PDQ</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/joshuacox/mkcloudatcost/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/joshuacox/mkcloudatcost/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/joshuacox/mkcloudatcost" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a id="mkcloudatcost" class="anchor" href="#mkcloudatcost" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>mkcloudatcost</h1>
+
+<p>Make a cloudatcost cloud PDQ</p>
+
+<h2>
+<a id="auto" class="anchor" href="#auto" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Auto</h2>
+
+<p>for the next commands in the future you will be able to precede by incanting
+<code>make trusty</code> (or <code>make jessie</code>, <code>make centos</code>, etc) a number of times which will
+create a trusty (jessie/centos) host each time,
+but the API is broken for now, 
+so you'll have to create them yourself using the <a href="https://panel.cloudatcost.com/">GUI</a></p>
+
+<p>Then once you have some fresh unnamed hosts, you can use my auto provisioners to finish up on them.
+This will change their run mode to normal, which prevents them from turning off in 7 days.
+Then it will rename, and set reverse DNS, key the server, do all normal updates, and install the newest docker.</p>
+
+<p><code>make auto</code> this will prepare a trusty host for docker hosting</p>
+
+<p><code>make jessieauto</code> this will prepare a jessie host for docker hosting</p>
+
+<p><code>make centosauto</code> this will prepare a centos host for docker hosting</p>
+
+<h2>
+<a id="detailed-usage" class="anchor" href="#detailed-usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Detailed Usage</h2>
+
+<h3>
+<a id="make-fulllist" class="anchor" href="#make-fulllist" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>make fullList</h3>
+
+<p><code>make fullLIst</code> or <code>make f</code>  will get you a file name fullLIst,</p>
+
+<h3>
+<a id="workinglist" class="anchor" href="#workinglist" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>workingList</h3>
+
+<p>copy the fullList file to <code>workingList</code>  i.e. <code>cp fullList workingList</code>
+now open this file and delete the lines containing servers you do NOT want to work with
+leaving the servers you DO want to work with, now most other commands work on this <code>workingList</code>
+it will look something like this:</p>
+
+<pre><code> 555697574 Not Assigned null 64.196.201.216 VyHequ 555697574  
+ 555697575 Not Assigned null 64.196.201.215 A3eRHn 555697575  
+ 555697576 Not Assigned null 64.196.201.214 qagp6u 555697576  
+ 555697577 Not Assigned null 64.196.201.213 JAaate 555697577  
+ 555697578 Not Assigned null 64.196.201.212 sEmn8y 555697578  
+</code></pre>
+
+<p>this lends itself to all sorts tom foolery like for example if you already have some servers you've made into 
+a kubernetes cluster you can <code>cat workingLIst &gt;&gt; workingList.centos</code> to add some new servers to a permanent list</p>
+
+<p>then <code>make clean</code>, provision a new group of centos servers (using <code>make centos</code> in the future, but for now the web interface works)</p>
+
+<p>use <code>make centosauto</code> on them to get them keyed, updated, and the latest docker installed</p>
+
+<p><code>make tester22</code> can be used to test them out and ensure the centosauto above worked.</p>
+
+<p>finally add them to you centos pool and reprovision your kubernetes cluster</p>
+
+<p><code>cat workingLIst &gt;&gt; workingList.centos</code> then <code>cp workingList.centos workingList</code></p>
+
+<p><code>make kargo</code> and you should have a more nodes in your cluster once that finishes</p>
+
+<p><code>kubectl get nodes</code></p>
+
+<h3>
+<a id="make-trusty" class="anchor" href="#make-trusty" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>make trusty</h3>
+
+<p>should build you a trusty machine, but the API is not working with the newest datacenter 
+ (DC3, was working but then they switch back to DC2 and broken again)
+ and as we are only able to provision into that datacenter this is broken for now
+ but should work with cloudatcost fixes things on their end</p>
+
+<h3>
+<a id="make-movein" class="anchor" href="#make-movein" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>make movein</h3>
+
+<p><code>make movein</code> this will execute my movein script on a fresh trusty instance getting you a 3.19 kernel docker 1.11 and overlayFS as your storage driver</p>
+
+<h3>
+<a id="make-jessieauto" class="anchor" href="#make-jessieauto" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>make jessieauto</h3>
+
+<p>much like <code>make auto</code> but intended for jessie machines</p>
+
+<h3>
+<a id="make-centosauto" class="anchor" href="#make-centosauto" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>make centosauto</h3>
+
+<p>much like auto but for centos7 machines</p>
+
+<h3>
+<a id="auto-naming" class="anchor" href="#auto-naming" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>auto naming</h3>
+
+<p>All of the auto methods above invoke <code>make names.list</code>, which invokes <code>make chosenNames</code>,
+if you wanted to override and only use the greek gods,
+simply copy that list to chosenNames and the Makefile will skip that step,</p>
+
+<p>e.g.</p>
+
+<pre><code>cp greekgods.names chosenNames
+rm names.list
+make names.list
+cat names.list
+</code></pre>
+
+<h3>
+<a id="deleter" class="anchor" href="#deleter" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>deleter</h3>
+
+<p>a delete function is not included for good reasons,
+but every now and then I want to delete en masse,
+and I copy this section in and double check my <code>workingList</code> twice to not be naughty but nice!</p>
+
+<pre><code>deleter:
+    $(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+    $(eval API_KEY := $(shell cat API_KEY))
+    $(eval API_USERNAME := $(shell cat API_USERNAME))
+    $(eval URL :=https://panel.cloudatcost.com/api/v1/delete.php)
+    $(eval DATA :=key=$(API_KEY)&amp;login=$(API_USERNAME))
+    while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+        do \
+        echo "curl -k -v --data '$(DATA)&amp;sid=$$SID&amp;mode=normal' '$(URL)'" ; \
+        done &lt; workingList &gt; $(TMP)/deleter 
+    -/bin/bash $(TMP)/deleter
+    -@rm -Rf $(TMP)
+</code></pre>
+
+<h3>
+<a id="kargo-wip" class="anchor" href="#kargo-wip" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Kargo (WIP)</h3>
+
+<p><code>make kargo</code> should get you a kargo cluster made out of the <code>workingList</code>,
+at the moment this only works on centos machines using port22, I'm working on that though</p>
+
+<p><code>make kargoConfig</code> should use the first master (the first machine in the <code>workingList</code>), 
+grab the certs, and setup <code>~/.kube/config</code> for you, this WIP though, thar be dragons</p>
+
+<h3>
+<a id="gluster-wip" class="anchor" href="#gluster-wip" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Gluster (WIP)</h3>
+
+<p><code>make gluster</code> should get you a cluster of glusterFS made out of the <code>workingList</code>,
+at the moment this only works on Trusty hosts as the ansible was written by Geerling for Trusty</p>
+
+<h3>
+<a id="waffleio" class="anchor" href="#waffleio" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Waffle.io</h3>
+
+<p><a href="http://waffle.io/joshuacox/mkcloudatcost"><img src="https://badge.waffle.io/joshuacox/mkcloudatcost.svg?label=ready&amp;title=Ready" alt="Stories in Ready"></a></p>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
