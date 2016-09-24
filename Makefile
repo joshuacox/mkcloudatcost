@@ -299,6 +299,16 @@ keyer16222:
 
 tester: listservers workingList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval SSH_PORT := $(shell cat SSH_PORT))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p$(SSH_PORT) root@$$IP 'uname -a ;docker ps'"; \
+		done < workingList > $(TMP)/tester 
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/tester
+	-@rm -Rf $(TMP)
+
+tester16222: listservers workingList
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p16222 root@$$IP 'uname -a ;docker ps'"; \
@@ -428,6 +438,16 @@ newList: fullList
 	cat fullList|grep 'Not Assigned null'>newList
 
 enter:
+	$(eval SSH_PORT := $(shell cat SSH_PORT))
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p$(SSH_PORT) root@$$IP"; \
+		done < workingList > $(TMP)/working.sh
+	-bash $(TMP)/working.sh
+	@rm -Rf $(TMP)
+
+enter16222:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \

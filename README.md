@@ -39,11 +39,30 @@ it will look something like this:
  555697578 Not Assigned null 64.196.201.212 sEmn8y 555697578  
 ```
 
+this lends itself to all sorts tom foolery like for example if you already have some servers you've made into 
+a kubernetes cluster you can `cat workingLIst >> workingList.centos` to add some new servers to a permanent list
+
+then `make clean`, provision a new group of centos servers (using `make centos` in the future, but for now the web interface works)
+
+use `make centosauto` on them to get them keyed, updated, and the latest docker installed
+
+`make tester22` can be used to test them out and ensure the centosauto above worked.
+
+finally add them to you centos pool and reprovision your kubernetes cluster
+
+`cat workingLIst >> workingList.centos` then `cp workingList.centos workingList`
+
+`make kargo` and you should have a more nodes in your cluster once that finishes
+
+`kubectl get nodes`
+
 ### make trusty
- should build you a trusty machine, but the API is not working with the newest datacenter (DC3) and as we are only able to provision into that datacenter this is broken for now
+ should build you a trusty machine, but the API is not working with the newest datacenter 
+ (DC3, was working but then they switch back to DC2 and broken again)
+ and as we are only able to provision into that datacenter this is broken for now
  but should work with cloudatcost fixes things on their end
 
-### make auto
+### make movein
 
 `make movein` this will execute my movein script on a fresh trusty instance getting you a 3.19 kernel docker 1.11 and overlayFS as your storage driver
 
@@ -72,7 +91,7 @@ cat names.list
 ### deleter
 
 a delete function is not included for good reasons,
-but every now and then I want to delete enmasse,
+but every now and then I want to delete en masse,
 and I copy this section in and double check my `workingList` twice to not be naughty but nice!
 
 ```
