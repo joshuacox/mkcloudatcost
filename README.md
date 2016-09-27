@@ -1,6 +1,14 @@
 # mkcloudatcost
 Make a cloudatcost cloud PDQ
 
+### Requirements
+
+This is only useful if you have an account here:
+http://cloudatcost.com/
+
+The big advantage is that you pay a one time fee and get access to a VM for life!
+Now let's automate provisioning so we can test some things out and get some use out of these VMs.
+
 ## Auto
 
 for the next commands in the future you will be able to precede by incanting
