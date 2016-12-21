@@ -133,3 +133,8 @@ at the moment this only works on Trusty hosts as the ansible was written by Geer
 ### Waffle.io
 
 [![Stories in Ready](https://badge.waffle.io/joshuacox/mkcloudatcost.svg?label=ready&title=Ready)](http://waffle.io/joshuacox/mkcloudatcost)
+
+### GNU Parallel
+
+  O. Tange (2011): GNU Parallel - The Command-Line Power Tool,
+      ;login: The USENIX Magazine, February 2011:42-47.
