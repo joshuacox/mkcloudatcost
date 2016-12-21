@@ -56,9 +56,9 @@ use `make centosauto` on them to get them keyed, updated, and the latest docker 
 
 `make tester22` can be used to test them out and ensure the centosauto above worked.
 
-finally add them to you centos pool and reprovision your kubernetes cluster
+finally add them to your centos pool and reprovision your kubernetes cluster
 
-`cat workingLIst >> workingList.centos` then `cp workingList.centos workingList`
+`cat workingLIst >> workingList.centos` then in the future when you want to work with this set of kubernetes servers `cp workingList.centos workingList`
 
 `make kargo` and you should have a more nodes in your cluster once that finishes
 
@@ -134,7 +134,11 @@ at the moment this only works on Trusty hosts as the ansible was written by Geer
 
 [![Stories in Ready](https://badge.waffle.io/joshuacox/mkcloudatcost.svg?label=ready&title=Ready)](http://waffle.io/joshuacox/mkcloudatcost)
 
-### GNU Parallel
+###### GNU Parallel
 
+This repo uses [GNU parallel](https://www.gnu.org/software/parallel/) you should too!
+
+```
   O. Tange (2011): GNU Parallel - The Command-Line Power Tool,
-      ;login: The USENIX Magazine, February 2011:42-47.
+    ;login: The USENIX Magazine, February 2011:42-47.
+```
