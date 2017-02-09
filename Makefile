@@ -102,7 +102,7 @@ listservers:
 	echo "curl -k -o listservers '$(URL)' "|bash
 
 fullList: API_USERNAME API_KEY  listservers
-	jq -r '.data[] | " \(.sid) \(.hostname) \(.label) \(.ip) \(.rootpass) \(.id)  " ' listservers >> fullList
+	jq -r '.data[] | " \(.sid),\(.hostname),\(.label),\(.ip),\(.rootpass),\(.id)  " ' listservers >> fullList
 
 hostnamer: API_USERNAME API_KEY 
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -111,7 +111,7 @@ hostnamer: API_USERNAME API_KEY
 	$(eval URL :=https://panel.cloudatcost.com/api/v1/rdns.php)
 	$(eval URL2 :=https://panel.cloudatcost.com/api/v1/renameserver.php)
 	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 	do \
 	echo "curl -k -v --data '$(DATA)&sid=$$SID&hostname=$$HOSTNAME' '$(URL)'" ; \
 	echo "curl -k -v --data '$(DATA)&sid=$$SID&name=$$NAME' '$(URL2)'" ; \
@@ -125,7 +125,7 @@ normalizer: API_USERNAME API_KEY
 	$(eval API_USERNAME := $(shell cat API_USERNAME))
 	$(eval URL :=https://panel.cloudatcost.com/api/v1/runmode.php)
 	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "curl -k -v --data '$(DATA)&sid=$$SID&mode=normal' '$(URL)'" ; \
 		done < workingList > $(TMP)/normalizer 
@@ -138,7 +138,7 @@ rebooter:
 	$(eval API_USERNAME := $(shell cat API_USERNAME))
 	$(eval URL :=https://panel.cloudatcost.com/api/v1/powerop.php)
 	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME)&action=reset)
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "curl -k -v --data '$(DATA)&sid=$$SID&mode=normal' '$(URL)'" ; \
 		done < workingList > $(TMP)/rebooter 
@@ -157,7 +157,7 @@ glusterPrep:
 	wget https://github.com/joshuacox/mkgluster/archive/master.zip ; \
 	unzip master.zip
 	echo '[all]'> $(TMP)/mkgluster-master/inventory
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo -n "$$NAME\t ansible_host=$$IP ">> $(TMP)/mkgluster-master/inventory ; \
 		echo -n ' ansible_ssh_user=root' >> $(TMP)/mkgluster-master/inventory ; \
@@ -166,7 +166,7 @@ glusterPrep:
 		done < workingList
 	echo ''>> $(TMP)/mkgluster-master/inventory
 	echo '[gluster]'>> $(TMP)/mkgluster-master/inventory
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "$$NAME">> $(TMP)/mkgluster-master/inventory ; \
 		done < workingList
@@ -203,7 +203,7 @@ kargoPrep: SSH_PORT SSH_KEY KUBE_NETWORK_PLUGIN KUBE_NETWORK K8S_PASSWD
 	echo  '#!/bin/bash' > $(TMP)/mkargo.sh
 	echo 'export ANSIBLE_SCP_IF_SSH=y'>> $(TMP)/mkargo.sh
 	echo -n 'kargo prepare --nodes ' >> $(TMP)/mkargo.sh
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo -n "$$NAME[ansible_host=$$IP,">> $(TMP)/mkargo.sh ; \
 		echo -n "ansible_private_key_file=~/.ssh/id_ecdsa,">> $(TMP)/mkargo.sh ; \
@@ -235,7 +235,7 @@ kargoConfig:
 	head -n1 workingList > $(TMP)/masterList
 	echo  '#!/bin/bash' > $(TMP)/mkargo.sh
 	echo 'export ANSIBLE_SCP_IF_SSH=y'>> $(TMP)/mkargo.sh
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		mkdir -p certs/$$NAME ; \
 	    echo "scp -P $(SSH_PORT) root@$$IP:/etc/kubernetes/ssl/admin-key.pem certs/$$NAME/" >> $(TMP)/mkargo.sh ; \
@@ -263,7 +263,7 @@ kargoConfig:
 
 installCurl:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "./sshcurler root $$ROOTPASSWORD $$IP 22"; \
 		done < workingList > $(TMP)/working.sh
@@ -272,7 +272,7 @@ installCurl:
 
 debkeyer:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "./debkeymaster root $$ROOTPASSWORD $$IP" 22; \
 		done < workingList > $(TMP)/working.sh
@@ -281,7 +281,7 @@ debkeyer:
 
 keyer:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "./keymaster root $$ROOTPASSWORD $$IP" 22; \
 		done < workingList > $(TMP)/working.sh
@@ -290,7 +290,7 @@ keyer:
 
 keyer16222:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "./keymaster root $$ROOTPASSWORD $$IP" 16222; \
 		done < workingList > $(TMP)/working.sh
@@ -300,7 +300,7 @@ keyer16222:
 tester: listservers workingList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p$(SSH_PORT) root@$$IP 'uname -a ;docker ps'"; \
 		done < workingList > $(TMP)/tester 
@@ -309,7 +309,7 @@ tester: listservers workingList
 
 tester16222: listservers workingList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p16222 root@$$IP 'uname -a ;docker ps'"; \
 		done < workingList > $(TMP)/tester 
@@ -318,7 +318,7 @@ tester16222: listservers workingList
 
 tester22: listservers workingList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p22 root@$$IP 'which curl;uname -a '"; \
 		done < workingList > $(TMP)/tester 
@@ -327,7 +327,7 @@ tester22: listservers workingList
 
 sshrebooter: listservers workingList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p16222 root@$$IP 'shutdown -r +1 &'"; \
 		done < workingList > $(TMP)/rebooter 
@@ -336,7 +336,7 @@ sshrebooter: listservers workingList
 
 sshrebooter22: listservers workingList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p22 root@$$IP 'shutdown -r +1 &'"; \
 		done < workingList > $(TMP)/rebooter 
@@ -345,7 +345,7 @@ sshrebooter22: listservers workingList
 
 keyscan: listservers workingList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh-keyscan -p22 $$IP >>~/.ssh/known_hosts"; \
 		done < workingList > $(TMP)/keyscan
@@ -354,7 +354,7 @@ keyscan: listservers workingList
 
 keyscan16222: listservers workingList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh-keyscan -p16222 $$IP >>~/.ssh/known_hosts"; \
 		done < workingList > $(TMP)/keyscan
@@ -378,7 +378,7 @@ movein: trustymovein
 
 jessiemovein:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/jessie-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
 		done < workingList > $(TMP)/working.sh
@@ -387,7 +387,7 @@ jessiemovein:
 
 trustymovein:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/trusty-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
 		done < workingList > $(TMP)/working.sh
@@ -396,7 +396,7 @@ trustymovein:
 
 trustymovein16222:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p16222 root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/trusty-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
 		done < workingList > $(TMP)/working.sh
@@ -405,13 +405,13 @@ trustymovein16222:
 
 centosmovein:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP ))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh root@$$IP 'echo "nameserver 8.8.8.8" >>/etc/resolv.conf echo "nameserver 8.8.4.4" >>/etc/resolv.conf; echo "DNS1=8.8.8.8" >>/etc/sysconfig/network-scripts/ifcfg-eth0; echo "DNS2=8.8.4.4" >>/etc/sysconfig/network-scripts/ifcfg-eth0'"; \
 		done < workingList > $(TMP)/working.sh
 	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	- rm  $(TMP)/working.sh
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/centos-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
 		done < workingList > $(TMP)/working.sh
@@ -435,12 +435,12 @@ workingList: fullList
 	cat workingList
 
 newList: fullList
-	cat fullList|grep 'Not Assigned null'>newList
+	cat fullList|grep 'Not Assigned,null'>newList
 
 enter:
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p$(SSH_PORT) root@$$IP"; \
 		done < workingList > $(TMP)/working.sh
@@ -449,7 +449,7 @@ enter:
 
 enter16222:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p16222 root@$$IP"; \
 		done < workingList > $(TMP)/working.sh
@@ -458,7 +458,7 @@ enter16222:
 
 enter22:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p22 root@$$IP"; \
 		done < workingList > $(TMP)/working.sh
@@ -530,7 +530,7 @@ chosenNames:
 names.list: chosenNames fullList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	cat chosenNames > $(TMP)/names.list
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 	    cat $(TMP)/names.list|grep -v $$NAME > $(TMP)/names.list.tmp ; \
 	    mv $(TMP)/names.list.tmp $(TMP)/names.list ; \
@@ -550,7 +550,7 @@ newnamer: fullList names.list newList DOMAIN
 	while read NAME; \
 		do \
 		((COUNTZERO++)) ; \
-		echo "sed -i '$$COUNTZERO s/Not\ Assigned\ null/$$NAME.$(DOMAIN) $$NAME/' $(CWD)/newList"; \
+		echo "sed -i '$$COUNTZERO s/Not\ Assigned,null/$$NAME.$(DOMAIN),$$NAME/' $(CWD)/newList"; \
 		done < names.list > $(TMP)/working.sh
 	-bash $(TMP)/working.sh
 	@rm -Rf $(TMP)
@@ -571,7 +571,7 @@ example:
 freeipa:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p$(SSH_PORT) root@$$IP 'git clone https://github.com/joshuacox/mkFreeIPA.git '"; \
 		done < workingList > $(TMP)/working.sh 
@@ -581,7 +581,7 @@ freeipa:
 freeipaauto: freeipa
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p$(SSH_PORT) root@$$IP ' cd mkFreeIPA; make auto '"; \
 		done < workingList > $(TMP)/working.sh 
@@ -600,7 +600,7 @@ getvipernames:
 redmine:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p$(SSH_PORT) root@$$IP 'git clone https://github.com/joshuacox/mkRedmine.git; cd mkRedmine'"; \
 		done < workingList > $(TMP)/working.sh 
@@ -610,7 +610,7 @@ redmine:
 nginx:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p$(SSH_PORT) root@$$IP 'git clone https://github.com/joshuacox/mknginx.git; cd mknginx '"; \
 		done < workingList > $(TMP)/working.sh 
@@ -620,7 +620,7 @@ nginx:
 diaspora:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh -p$(SSH_PORT) root@$$IP 'git clone https://github.com/Chocobozzz/Diaspora-Docker.git  ; cd Diaspora-Docker/scripts; echo build.sh '"; \
 		echo "ssh -p$(SSH_PORT) root@$$IP 'git clone https://github.com/joshuacox/mkdiaspora.git'"; \
@@ -633,7 +633,7 @@ filler: freeipa redmine nginx diaspora fillerRestart
 fillerRestart:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
-	while read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "scp -P$(SSH_PORT) restart.sh root@$$IP:/root/restart.sh "; \
 		done < workingList > $(TMP)/working.sh 
