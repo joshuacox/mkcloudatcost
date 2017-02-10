@@ -437,6 +437,16 @@ workingList: fullList
 newList: fullList
 	cat fullList|grep 'Not Assigned,null'>newList
 
+show:
+	$(eval SSH_PORT := $(shell cat SSH_PORT))
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+	    echo SID=$$SID HOST=$$HOSTNAME NAME=$$NAME IP=$$IP ROOTPASSWORD=$$ROOTPASSWORD ID=$$ID; \
+		done < workingList > $(TMP)/working.sh
+	-cat $(TMP)/working.sh
+	@rm -Rf $(TMP)
+
 enter:
 	$(eval SSH_PORT := $(shell cat SSH_PORT))
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -527,14 +537,16 @@ API_USERNAME:
 chosenNames:
 	cat *.names > chosenNames
 
+names.list: SHELL:=/bin/bash
 names.list: chosenNames fullList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	cat chosenNames > $(TMP)/names.list
 	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
-	    cat $(TMP)/names.list|grep -v $$NAME > $(TMP)/names.list.tmp ; \
+	    echo SID=$$SID HOST=$$HOSTNAME NAME=$$NAME IP=$$IP ROOTPASSWORD=$$ROOTPASSWORD ID=$$ID; \
+	    cat $(TMP)/names.list|grep -v "$$NAME" > $(TMP)/names.list.tmp ; \
 	    mv $(TMP)/names.list.tmp $(TMP)/names.list ; \
-	    cat $(TMP)/names.list|grep -v $$HOSTNAME > $(TMP)/names.list.tmp ; \
+	    cat $(TMP)/names.list|grep -v "$$HOSTNAME" > $(TMP)/names.list.tmp ; \
 	    mv $(TMP)/names.list.tmp $(TMP)/names.list ; \
 		done < fullList
 	cat $(TMP)/names.list| sort -R --random-source=/dev/urandom > $(TMP)/names.list.tmp
