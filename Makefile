@@ -8,6 +8,12 @@ help:
 
 auto: trustyauto
 
+rancher: rancher16222
+
+xenialauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer xenialnext
+
+xenialnext: API_USERNAME API_KEY workingList keyscan keyer xenialmovein tester22 sshrebooter22
+
 trustyauto: API_USERNAME API_KEY newList newnamer hostnamer normalizer trustynext
 
 trustynext: API_USERNAME API_KEY workingList keyscan keyer trustymovein tester22 sshrebooter22
@@ -64,7 +70,7 @@ mktrustyclusty: API_USERNAME API_KEY
 	$(eval API_KEY := $(shell cat API_KEY))
 	$(eval API_USERNAME := $(shell cat API_USERNAME))
 	$(eval URL :=https://panel.cloudatcost.com/api/v1/cloudpro/build.php)
-	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME)&cpu=4&ram=2048&storage=40&os=27)
+	$(eval DATA :=key=$(API_KEY)&login=$(API_USERNAME)&cpu=6&ram=3072&storage=33&os=27)
 	echo "curl -k -v -o $(TMP)/mktrustyclusty --data '$(DATA)' '$(URL)'"|bash
 	cat $(TMP)/mktrustyclusty>>trusties
 	-@rm -Rf $(TMP)
@@ -102,7 +108,7 @@ listservers:
 	echo "curl -k -o listservers '$(URL)' "|bash
 
 fullList: API_USERNAME API_KEY  listservers
-	jq -r '.data[] | " \(.sid),\(.hostname),\(.label),\(.ip),\(.rootpass),\(.id)  " ' listservers >> fullList
+	jq -r '.data[] | " \(.sid),\(.hostname),\(.label),\(.ip),\(.rootpass),\(.id),\(.mode)  " ' listservers >> fullList
 
 hostnamer: API_USERNAME API_KEY 
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -119,7 +125,11 @@ hostnamer: API_USERNAME API_KEY
 	-/usr/bin/time parallel  --jobs 2 -- < $(TMP)/hostnamer
 	-@rm -Rf $(TMP)
 
-normalizer: API_USERNAME API_KEY 
+normalList: fullList
+	touch normalList
+	-@grep 'Safe' fullList > normalList
+
+normalizer: API_USERNAME API_KEY normalList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval API_KEY := $(shell cat API_KEY))
 	$(eval API_USERNAME := $(shell cat API_USERNAME))
@@ -128,8 +138,9 @@ normalizer: API_USERNAME API_KEY
 	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "curl -k -v --data '$(DATA)&sid=$$SID&mode=normal' '$(URL)'" ; \
-		done < workingList > $(TMP)/normalizer 
+		done < normalList > $(TMP)/normalizer 
 	-/usr/bin/time parallel  --jobs 2 -- < $(TMP)/normalizer
+	-@rm normalList
 	-@rm -Rf $(TMP)
 
 rebooter:
@@ -307,6 +318,40 @@ tester: listservers workingList
 	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/tester
 	-@rm -Rf $(TMP)
 
+upgrader: upgrader16222
+
+upgrader22: listservers workingList
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p22 root@$$IP 'yes y|do-release-upgrade -q'"; \
+		done < workingList > $(TMP)/upgrader
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/upgrader
+	-@rm -Rf $(TMP)
+
+upgrader16222: listservers workingList
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p16222 root@$$IP 'yes y|do-release-upgrade -q'"; \
+		done < workingList > $(TMP)/upgrader
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/upgrader
+	-@rm -Rf $(TMP)
+
+rancher16222: listservers workingList
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "scp -P16222 RANCHER_INIT root@$$IP:/root/RANCHER_INIT" ; \
+		done < workingList > $(TMP)/ranchercp
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh -p16222 root@$$IP 'bash /root/RANCHER_INIT'"; \
+		done < workingList > $(TMP)/rancher
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/ranchercp
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/rancher
+	-@rm -Rf $(TMP)
+
 tester16222: listservers workingList
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
@@ -381,6 +426,15 @@ jessiemovein:
 	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
 		do \
 		echo "ssh root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/jessie-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
+		done < workingList > $(TMP)/working.sh
+	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
+	@rm -Rf $(TMP)
+
+xenialmovein:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	while IFS=","  read SID HOSTNAME NAME IP ROOTPASSWORD ID; \
+		do \
+		echo "ssh root@$$IP 'curl https://raw.githubusercontent.com/joshuacox/potential-octo-ironman/xenial-cloudatcost-base/movein.sh | bash ;hostname $$HOSTNAME; echo $$HOSTNAME > /etc/hostname '"; \
 		done < workingList > $(TMP)/working.sh
 	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	@rm -Rf $(TMP)
@@ -519,6 +573,11 @@ KUBE_NETWORK_PLUGIN:
 		read -r -p "Enter the KUBE_NETWORK_PLUGIN you wish to associate with this cluster [flannel, calico, weave KUBE_NETWORK_PLUGIN]: " KUBE_NETWORK_PLUGIN; echo "$$KUBE_NETWORK_PLUGIN">>KUBE_NETWORK_PLUGIN; cat KUBE_NETWORK_PLUGIN; \
 	done ;
 
+RANCHER_INIT:
+	@while [ -z "$$RANCHER_INIT" ]; do \
+		read -r -p "Enter the RANCHER_INIT you wish to associate with this cluster [RANCHER_INIT]: " RANCHER_INIT; echo "$$RANCHER_INIT">>RANCHER_INIT; cat RANCHER_INIT; \
+	done ;
+
 SSH_PORT:
 	@while [ -z "$$SSH_PORT" ]; do \
 		read -r -p "Enter the SSH_PORT you wish to associate with this cluster [SSH_PORT]: " SSH_PORT; echo "$$SSH_PORT">>SSH_PORT; cat SSH_PORT; \
@@ -651,3 +710,9 @@ fillerRestart:
 		done < workingList > $(TMP)/working.sh 
 	-/usr/bin/time parallel  --jobs 25 -- < $(TMP)/working.sh
 	-@rm -Rf $(TMP)
+
+ranchList1: fullList
+	grep '45.62' fullList > ranchList1
+
+ranchList2: fullList
+	grep '64.137' fullList > ranchList2
